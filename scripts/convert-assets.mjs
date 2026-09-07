@@ -24,7 +24,10 @@ const REF = path.join(ROOT, 'reference')
 // 输出到 public/assets（Vite 原样拷到 dist，保留子目录与文件名，file:// 相对路径可加载）
 const OUT_IMG = path.join(ROOT, 'public', 'assets', 'img')
 const OUT_AUDIO = path.join(ROOT, 'public', 'assets', 'audio')
-const OUT_TEXT = path.join(ROOT, 'public', 'assets', 'text')
+// Tips/News/Ticker 文本在构建期由 JS 以 ?raw 导入 → 存到 src/core/data/text/
+const OUT_TEXT = path.join(ROOT, 'src', 'core', 'data', 'text')
+// 帮助 HTML 是运行时资源 → 存到 public/assets/text/
+const OUT_HELP = path.join(ROOT, 'public', 'assets', 'text')
 
 const IMG_EXT = new Set(['.bmp', '.jpg', '.jpeg', '.ico', '.gif', '.png'])
 const AUDIO_EXT = new Set(['.wav'])
@@ -132,13 +135,13 @@ console.log(`文本 → assets/text/: 本次转换 ${textCount} 个`)
 // ---- 4. help (oldhelp HTML) ----------------------------------------------
 const helpSrc = path.join(REF, 'oldhelp')
 if (existsSync(helpSrc)) {
-  const out = path.join(OUT_TEXT, 'help.html')
+  const out = path.join(OUT_HELP, 'help.html')
   if (newerOrMissing(helpSrc, out)) {
     const utf8 = decodeGbk(readFileSync(helpSrc))
     // Help HTML 里原样引用 backblue.gif；浏览器按 assets/img/backblue.png 用，
     // 这里不强改引用（help 属 M3，到时链接真实资源时再核对）。
     writeFileSync(out, utf8, 'utf-8')
-    console.log('帮助 → assets/text/help.html')
+    console.log('帮助 → public/assets/text/help.html')
   }
 }
 

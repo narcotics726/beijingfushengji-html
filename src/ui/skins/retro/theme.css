@@ -1,0 +1,64 @@
+/* retro 皮肤：Win2000 观感风格的 CSS 变量 + 基础布景。可在 main.ts 全局引入。
+   换肤 = 换一套 CSS 变量/背景（叠另一份 theme.css），core 不动。 */
+
+:root {
+  /* 界面色板（Win2000 米灰 + 深氛围） */
+  --fsj-bg: #2c3a2e;            /* 页面底 */
+  --fsj-panel: #d8d3c5;         /* 面板 */
+  --fsj-panel2: #e7e4d8;
+  --fsj-border: #7a6e58;        /* 边框 */
+  --fsj-shadow: #fff;           /* 高光 */
+  --fsj-btntop: #f2f0e8;
+  --fsj-btnbot: #b8b2a4;
+  --fsj-text: #1c2019;
+  --fsj-title: #f3f2e2;         /* 顶部标题 */
+  --fsj-accent: #3a5a8c;        /* 选中/强调 */
+  --fsj-led-on: #35e03a;        /* LED 绿 */
+  --fsj-led-off: #1c3a1c;
+  --fsj-cash: #0a7a0a;
+  --fsj-debt: #c00;
+  --fsj-health: #0a5a8c;
+  --fsj-dim: #6b6656;
+
+  font-size: 16px;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; padding: 0; }
+#app { min-height: 100vh; display: flex; flex-direction: column; }
+body {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: var(--fsj-bg);
+  color: var(--fsj-text);
+  -webkit-text-size-adjust: 100%;
+}
+
+button {
+  font-family: inherit;
+  background: linear-gradient(var(--fsj-btntop), var(--fsj-btnbot));
+  border: 1px solid var(--fsj-border);
+  border-radius: 4px;
+  box-shadow: 1px 1px 0 var(--fsj-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  color: var(--fsj-text);
+  padding: 3px 8px;
+  min-height: 34px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+button:active { transform: translateY(1px); box-shadow: none; }
+button:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+
+.panel {
+  background: var(--fsj-panel);
+  border: 2px solid var(--fsj-border);
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+  padding: 8px;
+}
+.panel h2 {
+  margin: 0 0 6px;
+  font-size: 0.9em;
+  color: var(--fsj-accent);
+  border-bottom: 1px solid var(--fsj-border);
+  padding-bottom: 3px;
+}
