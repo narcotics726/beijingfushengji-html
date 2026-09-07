@@ -5,6 +5,7 @@ import { createInitialState, START_CASH, START_DEBT, START_TIME_LEFT } from '../
 import { newGame, moveTo, getScore } from '../src/core/engine'
 import {
   maxBuyQty,
+  maxSellQty,
   buy,
   sell,
   rentHouse,
@@ -63,6 +64,39 @@ describe('卖出（按当前价）', () => {
     expect(s.cash).toBe(200)
     expect(s.holdings[0]).toBe(1)
     expect(s.total).toBe(1)
+  })
+})
+
+describe('可卖上限与「当天不可卖」', () => {
+  it('当日在黑市且持仓>0 → 可卖量=持仓', () => {
+    const s = createInitialState()
+    s.prices[0] = 100
+    s.holdings[0] = 3
+    expect(maxSellQty(s, 0)).toBe(3)
+  })
+  it('当日价格0(不在黑市) → 不可卖，卖出为0', () => {
+    const s = createInitialState()
+    s.prices[0] = 0
+    s.holdings[0] = 3
+    expect(maxSellQty(s, 0)).toBe(0)
+    expect(sell(s, 0, 2)).toBe(0)
+    expect(s.holdings[0]).toBe(3)
+  })
+})
+
+describe('卖违禁品扣名声（源码：禁书-7，假酒-10，下限0）', () => {
+  it('卖禁书(4)名声-7，卖假酒(3)名声-10', () => {
+    const s = createInitialState()
+    s.cash = 100000
+    s.fame = 100
+    s.prices[4] = 1000
+    s.prices[3] = 1000
+    s.holdings[4] = 2
+    s.holdings[3] = 2
+    expect(sell(s, 4, 1)).toBe(1)
+    expect(s.fame).toBe(93)
+    expect(sell(s, 3, 1)).toBe(1)
+    expect(s.fame).toBe(83)
   })
 })
 

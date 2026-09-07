@@ -43,13 +43,23 @@ export function buy(state: GameState, goodId: number, qty: number): number {
   return n
 }
 
-/** 以当前黑市价卖出 qty（自动截断到持有量）。返回实际卖出量。 */
+/** 当天是否可卖：既要有持仓，且该货物当天在黑市(价格>0)（源码 left_has 判断）。 */
+export function maxSellQty(state: GameState, goodId: number): number {
+  if (state.prices[goodId] <= 0) return 0
+  return Math.max(0, state.holdings[goodId])
+}
+
+/** 以当前黑市价卖出 qty（自动截断到可卖/持仓上限；当天不在黑市则不可卖）。返回实际卖出量。 */
 export function sell(state: GameState, goodId: number, qty: number): number {
-  const n = Math.max(0, Math.min(qty, state.holdings[goodId]))
+  const n = Math.max(0, Math.min(qty, maxSellQty(state, goodId)))
   if (n === 0) return 0
+  if (state.prices[goodId] <= 0) return 0 // 当天不在黑市，无法卖出
   state.cash += n * state.prices[goodId]
   state.holdings[goodId] -= n
   state.total -= n
+  // 卖违禁品扣名声（源码：禁书 -7、假酒 -10，下限 0）
+  if (goodId === 4) state.fame = Math.max(0, state.fame - 7)
+  else if (goodId === 3) state.fame = Math.max(0, state.fame - 10)
   return n
 }
 

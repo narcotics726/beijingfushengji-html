@@ -36,16 +36,17 @@
   const houseGoods = $derived(GOODS.filter((x) => g.holdings[x.id] > 0))
 
   function qv(map: Record<number, number>, id: number) {
-    return map[id] ?? 1
+    return map[id] ?? 0
   }
-  // 原版买卖数量默认=最大；金钱/价格/持仓一变化（买/卖/过天/事件），即重算为当前可买/可卖上限
+  // 原版买卖数量默认=最大；金钱/价格/持仓一变化即重算为当前可买/可卖上限（可为 0）
   $effect(() => {
     const gg = g
     for (const gd of marketGoods) {
-      buyQty[gd.id] = Math.max(1, maxBuyQty(gg, gd.id))
+      buyQty[gd.id] = maxBuyQty(gg, gd.id)
     }
     for (const gd of houseGoods) {
-      sellQty[gd.id] = Math.max(1, gg.holdings[gd.id])
+      // 当天不在黑市(价格0)或没货 → 不可卖，数量 0
+      sellQty[gd.id] = gg.prices[gd.id] > 0 ? gg.holdings[gd.id] : 0
     }
   })
   // 移动到新地点（过天）；数量由上面的 $effect 自动重算为新一天的最大
@@ -109,8 +110,8 @@
         <li>
           <span class="name">{good.name}</span>
           <span class="price">{g.prices[good.id]} 元</span>
-          <input type="number" min="1" max={maxBuyQty(g, good.id)} bind:value={buyQty[good.id]} />
-          <button onclick={() => buyAction(good.id, qv(buyQty, good.id))}>买进</button>
+          <input type="number" min="0" max={maxBuyQty(g, good.id)} bind:value={buyQty[good.id]} />
+          <button disabled={maxBuyQty(g, good.id) <= 0} onclick={() => buyAction(good.id, qv(buyQty, good.id))}>买进</button>
         </li>
       {/each}
     </ul>
@@ -124,8 +125,8 @@
         <li>
           <span class="name">{good.name}</span>
           <span class="price">进{g.holdCost[good.id]}元 ×{g.holdings[good.id]}</span>
-          <input type="number" min="1" max={g.holdings[good.id]} bind:value={sellQty[good.id]} />
-          <button onclick={() => sellAction(good.id, Math.min(qv(sellQty, good.id), g.holdings[good.id]))}>卖出</button>
+          <input type="number" min="0" max={g.prices[good.id] > 0 ? g.holdings[good.id] : 0} bind:value={sellQty[good.id]} />
+          <button disabled={!(g.prices[good.id] > 0 && g.holdings[good.id] > 0)} onclick={() => sellAction(good.id, qv(sellQty, good.id))}>卖出</button>
         </li>
       {:else}
         <li class="empty">还没有货物。</li>
