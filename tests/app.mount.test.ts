@@ -35,11 +35,11 @@ describe('App 客户端挂载（jsdom）', () => {
     )
     expect(locButtons.length).toBe(10)
 
-    // 点「建国门」→ 移动过天 → 状态条显示当前位置
+    // 点「建国门」→ 移动过天 → 位置条显示当前位置
     const jgm = locButtons.find((b) => b.textContent === '建国门') as HTMLButtonElement
     jgm.click()
     await tick()
-    expect(target.innerHTML).toContain('@ 建国门')
+    expect(target.innerHTML).toContain('📍 建国门')
 
     // 等动态音效 import 落地（jsdom 无 Audio，被 sound.ts 的 try/catch 吞掉，不应抛错）
     await new Promise((r) => setTimeout(r, 20))

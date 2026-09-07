@@ -130,14 +130,13 @@
     }
   }}
 >
-  <span class="cell"><span class="lab">现</span><LedNumber value={g.cash} lit="#2ee22e" height={22} /></span>
-  <span class="cell"><span class="lab">债</span><LedNumber value={g.debt} lit="#e03030" height={22} /></span>
-  <span class="cell"><span class="lab">康</span><LedNumber value={g.health} lit="#2eb0e0" height={22} /></span>
-  <span class="where">@ {locName}</span>
+  <span class="cell"><span class="lab">现</span><LedNumber value={g.cash} lit="#2ee22e" height={28} /></span>
+  <span class="cell"><span class="lab">债</span><LedNumber value={g.debt} lit="#e03030" height={28} /></span>
+  <span class="cell"><span class="lab">康</span><LedNumber value={g.health} lit="#2eb0e0" height={28} /></span>
+  <span class="cell"><span class="lab">存</span><LedNumber value={g.bank} lit="#2ee22e" height={28} /></span>
+  <span class="cell"><span class="lab">名</span><LedNumber value={g.fame} lit={g.fame < 60 ? '#e03030' : '#2ee22e'} height={28} /></span>
   {#if showStatus}
-    <span class="cell"><span class="lab">存</span><LedNumber value={g.bank} lit="#2ee22e" height={16} /></span>
-    <span class="cell"><span class="lab">名</span><LedNumber value={g.fame} lit={g.fame < 60 ? '#e03030' : '#2ee22e'} height={16} /></span>
-    <span class="cell"><span class="lab">位</span><LedNumber value={g.total} lit="#e08020" height={16} /><span class="sl">/</span><LedNumber value={g.coat} lit="#e08020" height={16} /></span>
+    <span class="cell"><span class="lab">位</span><LedNumber value={g.total} lit="#e08020" height={20} /><span class="sl">/</span><LedNumber value={g.coat} lit="#e08020" height={20} /></span>
   {/if}
 </section>
 </div>
@@ -336,11 +335,10 @@
   .topbar h1 { margin: 0; font-size: 1.05em; flex: 1; position: relative; z-index: 1; text-shadow: 1px 1px 2px #000; }
   .banner { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0.28; }
   .top-actions { position: relative; z-index: 1; display: flex; gap: 6px; }
-  .statusbar { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 0.92em; margin: 6px; }
-  .cell { display: inline-flex; align-items: center; gap: 2px; background: #0a0a0a; border: 1px solid #24262a; border-radius: 3px; padding: 1px 4px; }
-  .lab { font-size: 0.78em; color: var(--fsj-dim); }
+  .statusbar { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; margin: 8px 6px; }
+  .cell { display: inline-flex; align-items: center; gap: 3px; background: #0a0a0a; border: 1px solid #24262a; border-radius: 3px; padding: 2px 6px; }
+  .lab { font-size: 0.82em; color: var(--fsj-dim); }
   .sl { color: var(--fsj-dim); }
-  .where { margin-left: auto; font-weight: 700; background: var(--fsj-accent); color: #fff; padding: 1px 6px; border-radius: 3px; }
   .loc-now { font-weight: 700; background: var(--fsj-accent); color: #fff; padding: 1px 6px; border-radius: 3px; }
   .core { flex: 1; min-height: 0; overflow: auto; display: block; padding: 0 4px 4px; }
   .pane { margin-bottom: 4px; background: var(--fsj-panel); border: 2px solid var(--fsj-border); border-radius: 6px; padding: 4px 6px; }
