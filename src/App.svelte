@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
   import { get } from 'svelte/store'
   import {
     game,
@@ -38,13 +39,22 @@
   function qv(map: Record<number, number>, id: number) {
     return map[id] ?? 1
   }
-  // 移动到新地点（过天）清空买卖输入；原地不动作则不清理
+  // 原版买/卖数量默认就是最大（CBuyDlg/CSellDlg m_nMaxCount=可买/可卖上限）
+  function populateQtyDefault() {
+    const b: Record<number, number> = {}
+    for (const gd of marketGoods) b[gd.id] = Math.max(1, maxBuyQty(g, gd.id))
+    buyQty = b
+    const s: Record<number, number> = {}
+    for (const gd of houseGoods) s[gd.id] = Math.max(1, g.holdings[gd.id])
+    sellQty = s
+  }
+  onMount(() => populateQtyDefault())
+  // 移动到新地点（过天）清空买卖输入并重置为新的默认最大；原地不动则不处理
   function goTo(id: number) {
     const before = get(game).loc
     moveToLoc(id)
     if (get(game).loc !== before) {
-      buyQty = {}
-      sellQty = {}
+      populateQtyDefault()
     }
   }
   function clampBuyQty(id: number) {

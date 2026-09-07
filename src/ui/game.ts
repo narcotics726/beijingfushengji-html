@@ -101,11 +101,13 @@ export function exitGame() {
 
 // ---- actions ------------------------------------------------------------
 export function buyAction(goodId: number, qty: number) {
-  A.buy(state, goodId, qty)
+  const n = A.buy(state, goodId, qty)
+  if (n > 0 && state.soundEnabled) import('./sound').then((m) => m.playSound('buy.wav'))
   refresh()
 }
 export function sellAction(goodId: number, qty: number) {
-  A.sell(state, goodId, qty)
+  const n = A.sell(state, goodId, qty)
+  if (n > 0 && state.soundEnabled) import('./sound').then((m) => m.playSound('money.wav'))
   refresh()
 }
 export function bankDepositAction(amt: number) {
