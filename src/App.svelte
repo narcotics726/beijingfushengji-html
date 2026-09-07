@@ -11,6 +11,7 @@
     bankWithdrawAction,
     hospitalAction,
     postOfficeAction,
+    repayAction,
     rentAction,
     wangbaAction,
     airportAction,
@@ -27,7 +28,7 @@
 
   let buyQty = $state<Record<number, number>>({})
   let sellQty = $state<Record<number, number>>({})
-  let amountDlg = $state<null | { mode: 'deposit' | 'withdraw' | 'heal'; label: string; max: number }>(null)
+  let amountDlg = $state<null | { mode: 'deposit' | 'withdraw' | 'heal' | 'repay'; label: string; max: number }>(null)
   let amountValue = $state(1)
   let showSettings = $state(false)
 
@@ -51,7 +52,16 @@
   function goTo(id: number) {
     moveToLoc(id)
   }
-  function openAmount(mode: 'deposit' | 'withdraw' | 'heal', label: string, max: number) {
+  // 邮局：有欠债 → 打开还款输入（默认/上限 = min(现金,欠债)）；无欠债 → 财富台词
+  function goPost() {
+    if (g.debt > 0) {
+      const max = Math.max(1, Math.min(g.cash, g.debt))
+      openAmount('repay', `村长在电话中说："铁牛，你欠俺${g.debt}元，快还!"`, max)
+    } else {
+      postOfficeAction()
+    }
+  }
+  function openAmount(mode: 'deposit' | 'withdraw' | 'heal' | 'repay', label: string, max: number) {
     amountDlg = { mode, label, max }
     amountValue = 1
   }
@@ -62,6 +72,7 @@
     amountDlg = null
     if (m === 'deposit') bankDepositAction(v)
     else if (m === 'withdraw') bankWithdrawAction(v)
+    else if (m === 'repay') repayAction(v)
     else hospitalAction(v)
   }
 </script>
@@ -139,7 +150,7 @@
 <footer class="actions">
   <button onclick={() => openAmount('deposit', '您存多少钱?', g.cash)}>银行</button>
   <button onclick={() => (amountDlg = { mode: 'heal', label: '需要治疗' + (100 - g.health) + '点(3500元/点)', max: 100 - g.health })}>医院</button>
-  <button onclick={() => postOfficeAction()}>邮局</button>
+  <button onclick={() => goPost()}>邮局</button>
   <button onclick={() => rentAction()}>租房</button>
   <button onclick={() => wangbaAction()}>网吧</button>
   <button onclick={() => airportAction()}>机场</button>

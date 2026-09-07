@@ -11,6 +11,8 @@ import {
   visitWangba,
   bankDeposit,
   bankWithdraw,
+  postOffice,
+  repayDebt,
 } from '../src/core/actions'
 import { fameStr, getTop10, insertScore, getMyOrder, DEFAULT_TOP10 } from '../src/core/storage'
 
@@ -74,6 +76,38 @@ describe('存取款', () => {
     expect(bankWithdraw(s, 100)).toBe(100)
     expect(s.cash).toBe(800)
     expect(s.bank).toBe(200)
+  })
+})
+
+describe('邮局还款', () => {
+  it('有欠债且现金足够：还款并扣除', () => {
+    const s = createInitialState()
+    s.cash = 3000
+    s.debt = 2000
+    repayDebt(s, 1000)
+    expect(s.debt).toBe(1000)
+    expect(s.cash).toBe(2000)
+  })
+  it('还款额超过现金：拒绝', () => {
+    const s = createInitialState()
+    s.cash = 500
+    s.debt = 2000
+    repayDebt(s, 1000)
+    expect(s.debt).toBe(2000)
+    expect(s.cash).toBe(500)
+  })
+  it('有欠债时 postOffice 给出还款提示', () => {
+    const s = createInitialState()
+    s.debt = 2000
+    const evs = postOffice(s)
+    expect(evs[0].text).toContain('铁牛，你欠俺2000元，快还!')
+  })
+  it('无欠债时按财富档位给台词', () => {
+    const s = createInitialState()
+    s.cash = 500
+    s.bank = 0
+    s.debt = 0
+    expect(postOffice(s)[0].text).toContain('你没钱')
   })
 })
 
