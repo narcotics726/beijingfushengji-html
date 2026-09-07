@@ -1,6 +1,13 @@
 # AGENTS.md — beijing_fushengji_html
 
-北京浮生记 (v1.2.2, C++/MFC 单机) → 纯静态网页版复刻。**行为 1:1**（规则/数值/事件/文本/同一随机流可复现演化），技术栈换 Web，架构不必复刻 MFC。项目契约见 `PLAN.md` §0。当前状态：计划已定，**尚未写代码**（`src/` 还不存在）。
+北京浮生记 (v1.2.2, C++/MFC 单机) → 纯静态网页版复刻。**行为 1:1**（规则/数值/事件/文本/同一随机流可复现演化），技术栈换 Web，架构不必复刻 MFC。项目契约见 `PLAN.md` §0。
+
+## 现状（M1 可玩核心已实现）
+- `src/core/`：纯 TS 规则引擎（state/rng/engine/actions/storage + data/），框架无关可在 Node 测。
+- `src/ui/`：`game.ts`（Svelte store 接线）、`sound.ts`（相对路径音频）、`App.svelte`（主界面）。
+- `tests/`：oracle（规则）+ actions + store（完整一局）+ App SSR，全部通过。
+- `reference/`（GBK 源码，git 忽略，勿改）；`public/assets/`（转档资源，Vite 拷到 dist/assets）；`dist/`（构建产物，git 忽略）；`scripts/convert-assets.mjs`（转档管线）。
+- 里程碑：M1 完成 → M2 移动皮肤/复古质感 → M3 延后（上海模式/纯文案框/帮助页）。
 
 ## ⚠️ 编码（最重要，先看这个）
 

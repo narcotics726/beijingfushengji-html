@@ -276,7 +276,7 @@ beijing_fushengji_html/
 │   │   ├── screens/
 │   │   └── main.ts
 │   └── main.ts           # Svelte mount 入口
-├── assets/ img/ audio/ text/
+├── public/assets/ img/ audio/ text/
 ├── tests/ oracle.test.ts
 ├── scripts/ convert-assets.*
 ├── spec/  behavior.md    # 行为场景（Given/When/Then）
@@ -301,13 +301,14 @@ beijing_fushengji_html/
 ## 6. 里程碑与验收（重排）
 
 ### M1 — 可玩核心（`core` + 桌面标签页验证逻辑）
-- [ ] 资产转档管线（图像/音效/GBK 文本 → `assets/`）
-- [ ] `core/data`：8 货/10 地点/事件表/Tips/News/Ticker
-- [ ] `core/rng`(可播种) + `core/engine`（移动流水线、三套事件、利息、住院、死亡、欠债惩罚、末日出清）
-- [ ] `core/actions`：买卖/银行/医院/邮局/房源/网吧/机场网络俱乐部/排行榜/设置
-- [ ] `ui` 主界面骨架（黑市/出租屋/状态 LED/10 地点/底栏）+ 主机制交互
-- [ ] localStorage 最高分 top10 + 设置开关 + 音效
-- [ ] **验收**：能开新局走完 40 回合、正常结算进榜；**oracle 套件在固定随机流下断言与源码公式等价**（价格/事件/资产）。
+
+- [x] 资产转档管线（图像/音效/GBK 文本 → `public/assets/`）
+- [x] `core/data`：8 货/10 地点/事件表/Tips/News/Ticker
+- [x] `core/rng`(可播种) + `core/engine`（移动流水线、三套事件、利息、住院、死亡、欠债惩罚、末日出清）
+- [x] `core/actions`：买卖/银行/医院/邮局/房源/网吧/机场网络俱乐部/排行榜/设置
+- [x] `ui` 主界面骨架（黑市/出租屋/状态 LED/10 地点/底栏）+ 主机制交互
+- [x] localStorage 最高分 top10 + 设置开关 + 音效
+- [x] **验收**：能开新局走完 40 回合、正常结算进榜；**oracle 套件在固定随机流下断言与源码公式等价**（价格/事件/资产）。
 
 ### M2 — 移动端皮肤 + 复古质感
 - [ ] `ui` 加/做成移动 skin：触控大热区、弹层/卡片式对话框、单手操作、竖屏适配、不溢出
@@ -323,7 +324,7 @@ beijing_fushengji_html/
 
 ## 7. 交付与部署（更新）
 
-- **交付**：自包含单文件 `index.html` + `assets/`；**单文件分发确定**。
+- **交付**：自包含单文件 `index.html` + `public/assets/`；**单文件分发确定**。
 - **部署**：具体方案后定。**现暂用 Cloudflare Pages 临时跑**（单文件站零门槛）。**国内免备案长期目标**：
   - 首选 **腾讯云 CloudBase 静态网站托管**（平台默认二级域名 `*.tcloudbaseapp.com`，免备案、国内快、传文件夹即用）——[参考](https://www.w3cschool.cn/cloudbasehandbookpro/cloudbasehandbookpro-tyjd38a2.html)
   - 备选 **腾讯云 EdgeOne Pages**（国内版 Vercel，Git 触发构建，免备案）——[参考](https://developer.cloud.tencent.com/article/2565878)
@@ -342,7 +343,7 @@ beijing_fushengji_html/
 
 ## 9. 交付产物
 
-- 一个可双击打开的 `index.html` 自包含静态站 + `assets/` + 打包资产
+- 一个可双击打开的 `index.html` 自包含静态站 + `public/assets/` + 打包资产
 - `core` + `ui/skins` 源码（`src/`）
 - `tests/oracle.test.ts` oracle 测试套件 + `spec/` 行为场景
 - 资产/文本转档脚本（可重复运行）
