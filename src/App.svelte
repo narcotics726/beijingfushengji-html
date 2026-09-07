@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { onMount } from 'svelte'
-  import { get } from 'svelte/store'
   import {
     game,
     events,
@@ -39,27 +37,19 @@
   function qv(map: Record<number, number>, id: number) {
     return map[id] ?? 1
   }
-  // 原版买/卖数量默认就是最大（CBuyDlg/CSellDlg m_nMaxCount=可买/可卖上限）
-  function populateQtyDefault() {
-    const b: Record<number, number> = {}
-    for (const gd of marketGoods) b[gd.id] = Math.max(1, maxBuyQty(g, gd.id))
-    buyQty = b
-    const s: Record<number, number> = {}
-    for (const gd of houseGoods) s[gd.id] = Math.max(1, g.holdings[gd.id])
-    sellQty = s
-  }
-  onMount(() => populateQtyDefault())
-  // 移动到新地点（过天）清空买卖输入并重置为新的默认最大；原地不动则不处理
-  function goTo(id: number) {
-    const before = get(game).loc
-    moveToLoc(id)
-    if (get(game).loc !== before) {
-      populateQtyDefault()
+  // 原版买卖数量默认=最大；金钱/价格/持仓一变化（买/卖/过天/事件），即重算为当前可买/可卖上限
+  $effect(() => {
+    const gg = g
+    for (const gd of marketGoods) {
+      buyQty[gd.id] = Math.max(1, maxBuyQty(gg, gd.id))
     }
-  }
-  function clampBuyQty(id: number) {
-    const m = maxBuyQty(g, id)
-    buyQty[id] = Math.max(1, Math.min(qv(buyQty, id), m))
+    for (const gd of houseGoods) {
+      sellQty[gd.id] = Math.max(1, gg.holdings[gd.id])
+    }
+  })
+  // 移动到新地点（过天）；数量由上面的 $effect 自动重算为新一天的最大
+  function goTo(id: number) {
+    moveToLoc(id)
   }
   function openAmount(mode: 'deposit' | 'withdraw' | 'heal', label: string, max: number) {
     amountDlg = { mode, label, max }
@@ -109,7 +99,7 @@
           <span class="name">{good.name}</span>
           <span class="price">{g.prices[good.id]} 元</span>
           <input type="number" min="1" max={maxBuyQty(g, good.id)} bind:value={buyQty[good.id]} />
-          <button onclick={() => { clampBuyQty(good.id); buyAction(good.id, qv(buyQty, good.id)) }}>买进</button>
+          <button onclick={() => buyAction(good.id, qv(buyQty, good.id))}>买进</button>
         </li>
       {/each}
     </ul>
