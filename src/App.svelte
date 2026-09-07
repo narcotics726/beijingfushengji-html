@@ -99,12 +99,6 @@
     else if (m === 'repay') repayAction(v)
     else hospitalAction(v)
   }
-  // B11 买入提示
-  function buyHint(goodId: number): string {
-    if (maxBuyQty(g, goodId) > 0) return ''
-    if (g.prices[goodId] > g.cash) return g.bank > 0 ? '现金不够，去银行提点吧' : '现金不够，银行也没存款'
-    return '仓满，租更大的房子吧'
-  }
 </script>
 
 <!-- 常驻顶区：标题 + 状态条一起 sticky -->
@@ -144,19 +138,19 @@
 </section>
 </div>
 
-<main class="scroll">
-  <!-- 位置条 → 弹选地点 -->
-  <section class="locbar panel">
-    <span class="loc-now">📍 {locName}</span>
-    <button onclick={() => (showLocation = true)}>去别处…</button>
-  </section>
+<!-- 位置条（薄）→ 弹选地点 -->
+<div class="locrow">
+  <span class="loc-now">📍 {locName}</span>
+  <button onclick={() => (showLocation = true)}>去别处…</button>
+</div>
 
-  <!-- 交易区 上 = 黑市(买) -->
-  <section class="panel market">
+<!-- 主区分屏：黑市上半(买) / 出租屋下半(卖)，两栏同屏、各自滚动 -->
+<main class="core">
+  <section class="pane market">
     <h2>地铁口黑市</h2>
-    <ul>
+    <div class="list">
       {#each marketGoods as good (good.id)}
-        <li class="row">
+        <div class="row">
           <div class="row-head">
             <span class="name">{good.name}</span>
             <span class="price">{g.prices[good.id]} 元</span>
@@ -166,20 +160,18 @@
             <b class="qty">{qv(buyQty, good.id)}</b>
             <button disabled={maxBuyQty(g, good.id) <= 0} onclick={() => buyAction(good.id, qv(buyQty, good.id))}>买进</button>
           </div>
-          {#if buyHint(good.id)}<div class="hint">{buyHint(good.id)}</div>{/if}
-        </li>
+        </div>
       {:else}
-        <li class="empty">今日黑市无货。</li>
+        <div class="empty">今日黑市无货。</div>
       {/each}
-    </ul>
+    </div>
   </section>
 
-  <!-- 交易区 下 = 出租屋(卖) -->
-  <section class="panel house">
+  <section class="pane house">
     <h2>您在海淀的出租屋</h2>
-    <ul>
+    <div class="list">
       {#each houseGoods as good (good.id)}
-        <li class="row">
+        <div class="row">
           <div class="row-head">
             <span class="name">{good.name}</span>
             <span class="price">进{g.holdCost[good.id]}元 ×{g.holdings[good.id]}</span>
@@ -189,30 +181,28 @@
             <b class="qty">{qv(sellQty, good.id)}</b>
             <button disabled={maxSellQty(g, good.id) <= 0} onclick={() => sellAction(good.id, qv(sellQty, good.id))}>卖出</button>
           </div>
-          {#if maxSellQty(g, good.id) <= 0 && g.prices[good.id] <= 0}<div class="hint">今日无市价，暂无法出售</div>{/if}
-        </li>
+        </div>
       {:else}
-        <li class="empty">还没有货物。</li>
+        <div class="empty">还没有货物。</div>
       {/each}
-    </ul>
-  </section>
-
-  <!-- 子系统平铺底部 -->
-  <section class="subsys panel">
-    <h2>工具</h2>
-    <div class="subsys-grid">
-      <button onclick={() => goBank()}>银行</button>
-      <button onclick={() => goHospital()}>医院</button>
-      <button onclick={() => goPost()}>邮局</button>
-      <button onclick={() => rentAction()}>租房</button>
-      <button onclick={() => wangbaAction()}>网吧</button>
-      <button onclick={() => airportAction()}>机场</button>
-      <button onclick={() => (showRank = true)}>排行榜</button>
-      <button class="boss" onclick={() => (showBoss = true)}>老板</button>
-      <button class="danger" onclick={() => exitGame()}>离开</button>
     </div>
   </section>
 </main>
+
+<!-- 子系统平铺底部（不占主滚动） -->
+<section class="subsys panel">
+  <div class="subsys-grid">
+    <button onclick={() => goBank()}>银行</button>
+    <button onclick={() => goHospital()}>医院</button>
+    <button onclick={() => goPost()}>邮局</button>
+    <button onclick={() => rentAction()}>租房</button>
+    <button onclick={() => wangbaAction()}>网吧</button>
+    <button onclick={() => airportAction()}>机场</button>
+    <button onclick={() => (showRank = true)}>排行榜</button>
+    <button class="boss" onclick={() => (showBoss = true)}>老板</button>
+    <button class="danger" onclick={() => exitGame()}>离开</button>
+  </div>
+</section>
 
 <!-- 底部新闻滚动条 -->
 <footer class="ticker">
@@ -354,16 +344,17 @@
   .led.debt { color: var(--fsj-debt); }
   .led.health { color: var(--fsj-health); }
   .where { margin-left: auto; color: var(--fsj-accent); font-weight: 700; }
-  .scroll { flex: 1; overflow: auto; padding: 0 6px 8px; }
-  ul { list-style: none; margin: 0; padding: 0; }
+  .core { flex: 1; display: flex; flex-direction: column; min-height: 0; gap: 4px; padding: 0 6px 4px; }
+  .pane { flex: 1; min-height: 0; display: flex; flex-direction: column; background: var(--fsj-panel); border: 2px solid var(--fsj-border); border-radius: 6px; padding: 6px 8px; }
+  .pane h2 { margin: 0 0 4px; font-size: 0.86em; color: var(--fsj-accent); border-bottom: 1px solid var(--fsj-border); padding-bottom: 2px; }
+  .list { flex: 1; overflow: auto; }
   .row { border-bottom: 1px dashed var(--fsj-border); padding: 4px 0; }
   .row-head { display: flex; justify-content: space-between; font-size: 0.95em; }
   .row-ctrl { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
   .row-ctrl input[type="range"] { flex: 1; }
   .qty { min-width: 2.2em; text-align: center; font-family: "Courier New", monospace; }
-  .hint { color: var(--fsj-debt); font-size: 0.82em; }
   .empty { color: var(--fsj-dim); padding: 6px; }
-  .locbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .locrow { display: flex; align-items: center; justify-content: space-between; padding: 2px 8px; font-weight: 700; }
   .loc-now { font-weight: 700; }
   .subsys-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 6px; }
   .subsys-grid button { min-height: 40px; font-size: 0.95em; }
@@ -390,6 +381,6 @@
   .boss-screen h1 { font-size: 2.4em; margin: 0 0 8px; letter-spacing: 0.2em; }
   .boss-screen p { color: #cbd7e6; }
   @media (min-width: 760px) {
-    .scroll { max-width: 760px; margin: 0 auto; }
+    .core { max-width: 760px; margin: 0 auto; width: 100%; }
   }
 </style>

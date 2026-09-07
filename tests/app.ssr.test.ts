@@ -14,7 +14,7 @@ describe('App 主界面', () => {
     expect(html).toContain('您在海淀的出租屋')
     // 位置条(去别处) + 子系统平铺
     expect(html).toContain('去别处')
-    expect(html).toContain('工具')
+    expect(html).toContain('银行')
     expect(html).toContain('排行榜')
     // 数量滑杆 + 底部 Ticker
     expect(html).toContain('type="range"')
