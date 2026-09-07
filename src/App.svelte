@@ -21,6 +21,7 @@
     updateSettings,
   } from './ui/game'
   import { maxBuyQty } from './core/actions'
+  import { playSound } from './ui/sound'
   import { GOODS } from './core/data/goods'
   import { LOCATIONS } from './core/data/locations'
 
@@ -53,22 +54,28 @@
   function goTo(id: number) {
     moveToLoc(id)
   }
-  // 邮局：有欠债 → 打开还款输入（默认/上限 = min(现金,欠债)）；无欠债 → 财富台词
+  // 医院：健康满 → 直接「大哥！神经科这边挂号」；否则开治疗点数框(默认=治满)
+  function goHospital() {
+    if (g.health >= 100) hospitalAction(0)
+    else openAmount('heal', `大夫高兴地拍着手：“您的健康点数是${g.health}，需要治疗的点数是${100 - g.health}。`, 100 - g.health)
+  }
+
+  // 邮局：有欠债 → 播开门音 + 打开还款输入（默认/上限 = min(现金,欠债)）；无欠债 → 财富台词
   function goPost() {
     if (g.debt > 0) {
-      const max = Math.max(1, Math.min(g.cash, g.debt))
-      openAmount('repay', `村长在电话中说："铁牛，你欠俺${g.debt}元，快还!"`, max)
+      if (g.soundEnabled) playSound('opendoor.wav')
+      openAmount('repay', `村长在电话中说："铁牛，你欠俺${g.debt}元，快还!"`, Math.min(g.cash, g.debt))
     } else {
       postOfficeAction()
     }
   }
   function openAmount(mode: 'deposit' | 'withdraw' | 'heal' | 'repay', label: string, max: number) {
     amountDlg = { mode, label, max }
-    amountValue = 1
+    amountValue = max // 默认=最大（源版：存全现金/取全存款/治满/还到 min(cash,debt)）
   }
   function confirmAmount() {
     if (!amountDlg) return
-    const v = Math.max(1, Math.min(amountDlg.max, Math.floor(amountValue)))
+    const v = Math.max(0, Math.min(amountDlg.max, Math.floor(amountValue)))
     const m = amountDlg.mode
     amountDlg = null
     if (m === 'deposit') bankDepositAction(v)
@@ -150,7 +157,7 @@
 <!-- 底栏子系统按钮 -->
 <footer class="actions">
   <button onclick={() => openAmount('deposit', '您存多少钱?', g.cash)}>银行</button>
-  <button onclick={() => (amountDlg = { mode: 'heal', label: '需要治疗' + (100 - g.health) + '点(3500元/点)', max: 100 - g.health })}>医院</button>
+  <button onclick={() => goHospital()}>医院</button>
   <button onclick={() => goPost()}>邮局</button>
   <button onclick={() => rentAction()}>租房</button>
   <button onclick={() => wangbaAction()}>网吧</button>
@@ -163,7 +170,7 @@
   <div class="modal">
     <div class="box">
       <p>{amountDlg.label}</p>
-      <input type="number" min="1" max={amountDlg.max} bind:value={amountValue} />
+      <input type="number" min="0" max={amountDlg.max} bind:value={amountValue} />
       <div class="row">
         <button onclick={() => confirmAmount()}>确定</button>
         <button onclick={() => (amountDlg = null)}>取消</button>
