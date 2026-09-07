@@ -46,7 +46,6 @@
   let showBoss = $state(false)
   let showLocation = $state(false)
   let showRank = $state(false)
-  let showStatus = $state(false)
 
   // 原版买卖数量默认=最大；金钱/价格/持仓一变化即重算为当前可买/可卖上限（可为 0）
   $effect(() => {
@@ -117,27 +116,18 @@
   </div>
 </header>
 
-<!-- 状态条 常驻，点开展开 -->
-<section
-  class="statusbar panel"
-  role="button"
-  tabindex="0"
-  onclick={() => (showStatus = !showStatus)}
-  onkeydown={(e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      showStatus = !showStatus
-      e.preventDefault()
-    }
-  }}
->
-  <span class="cell"><span class="lab">现</span><LedNumber value={g.cash} lit="#2ee22e" height={28} /></span>
-  <span class="cell"><span class="lab">债</span><LedNumber value={g.debt} lit="#e03030" height={28} /></span>
-  <span class="cell"><span class="lab">康</span><LedNumber value={g.health} lit="#2eb0e0" height={28} /></span>
-  <span class="cell"><span class="lab">存</span><LedNumber value={g.bank} lit="#2ee22e" height={28} /></span>
-  <span class="cell"><span class="lab">名</span><LedNumber value={g.fame} lit={g.fame < 60 ? '#e03030' : '#2ee22e'} height={28} /></span>
-  {#if showStatus}
-    <span class="cell"><span class="lab">位</span><LedNumber value={g.total} lit="#e08020" height={20} /><span class="sl">/</span><LedNumber value={g.coat} lit="#e08020" height={20} /></span>
-  {/if}
+<!-- 状态条 常驻（两行，全显示） -->
+<section class="statusbar panel">
+  <div class="srow">
+    <span class="cell"><span class="lab">现金</span><LedNumber value={g.cash} lit="#2ee22e" height={28} /></span>
+    <span class="cell"><span class="lab">欠债</span><LedNumber value={g.debt} lit="#e03030" height={28} /></span>
+    <span class="cell"><span class="lab">健康</span><LedNumber value={g.health} lit="#2eb0e0" height={28} /></span>
+  </div>
+  <div class="srow">
+    <span class="cell"><span class="lab">存款</span><LedNumber value={g.bank} lit="#2ee22e" height={28} /></span>
+    <span class="cell"><span class="lab">名声</span><LedNumber value={g.fame} lit={g.fame < 60 ? '#e03030' : '#2ee22e'} height={28} /></span>
+    <span class="cell"><span class="lab">物品</span><LedNumber value={g.total} lit="#e08020" height={28} /><span class="sl">/</span><LedNumber value={g.coat} lit="#e08020" height={28} /></span>
+  </div>
 </section>
 </div>
 
@@ -335,7 +325,8 @@
   .topbar h1 { margin: 0; font-size: 1.05em; flex: 1; position: relative; z-index: 1; text-shadow: 1px 1px 2px #000; }
   .banner { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0.28; }
   .top-actions { position: relative; z-index: 1; display: flex; gap: 6px; }
-  .statusbar { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; margin: 8px 6px; }
+  .statusbar { display: flex; flex-direction: column; gap: 5px; margin: 8px 6px; }
+  .srow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
   .cell { display: inline-flex; align-items: center; gap: 3px; background: #0a0a0a; border: 1px solid #24262a; border-radius: 3px; padding: 2px 6px; }
   .lab { font-size: 0.82em; color: var(--fsj-dim); }
   .sl { color: var(--fsj-dim); }
