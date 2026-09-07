@@ -29,7 +29,15 @@ export function maxBuyQty(state: GameState, goodId: number): number {
 export function buy(state: GameState, goodId: number, qty: number): number {
   const n = Math.max(0, Math.min(qty, maxBuyQty(state, goodId)))
   if (n === 0) return 0
-  state.cash -= n * state.prices[goodId]
+  const price = state.prices[goodId]
+  // 进价记为加权平均（源码 MoveListItems：新价 = (price*新量 + 旧均价*旧量) / 总量）
+  if (state.holdings[goodId] === 0) {
+    state.holdCost[goodId] = price
+  } else {
+    const old = state.holdings[goodId]
+    state.holdCost[goodId] = Math.floor((price * n + state.holdCost[goodId] * old) / (n + old))
+  }
+  state.cash -= price * n
   state.holdings[goodId] += n
   state.total += n
   return n

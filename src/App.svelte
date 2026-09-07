@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { get } from 'svelte/store'
   import {
     game,
     events,
@@ -19,6 +20,7 @@
     exitGame,
     updateSettings,
   } from './ui/game'
+  import { maxBuyQty } from './core/actions'
   import { GOODS } from './core/data/goods'
   import { LOCATIONS } from './core/data/locations'
 
@@ -35,6 +37,19 @@
 
   function qv(map: Record<number, number>, id: number) {
     return map[id] ?? 1
+  }
+  // 移动到新地点（过天）清空买卖输入；原地不动作则不清理
+  function goTo(id: number) {
+    const before = get(game).loc
+    moveToLoc(id)
+    if (get(game).loc !== before) {
+      buyQty = {}
+      sellQty = {}
+    }
+  }
+  function clampBuyQty(id: number) {
+    const m = maxBuyQty(g, id)
+    buyQty[id] = Math.max(1, Math.min(qv(buyQty, id), m))
   }
   function openAmount(mode: 'deposit' | 'withdraw' | 'heal', label: string, max: number) {
     amountDlg = { mode, label, max }
@@ -83,8 +98,8 @@
         <li>
           <span class="name">{good.name}</span>
           <span class="price">{g.prices[good.id]} 元</span>
-          <input type="number" min="1" bind:value={buyQty[good.id]} />
-          <button onclick={() => buyAction(good.id, qv(buyQty, good.id))}>买进</button>
+          <input type="number" min="1" max={maxBuyQty(g, good.id)} bind:value={buyQty[good.id]} />
+          <button onclick={() => { clampBuyQty(good.id); buyAction(good.id, qv(buyQty, good.id)) }}>买进</button>
         </li>
       {/each}
     </ul>
@@ -97,9 +112,9 @@
       {#each houseGoods as good (good.id)}
         <li>
           <span class="name">{good.name}</span>
-          <span class="price">{g.prices[good.id]} 元 ×{g.holdings[good.id]}</span>
-          <input type="number" min="1" bind:value={sellQty[good.id]} />
-          <button onclick={() => sellAction(good.id, qv(sellQty, good.id))}>卖出</button>
+          <span class="price">进{g.holdCost[good.id]}元 ×{g.holdings[good.id]}</span>
+          <input type="number" min="1" max={g.holdings[good.id]} bind:value={sellQty[good.id]} />
+          <button onclick={() => sellAction(good.id, Math.min(qv(sellQty, good.id), g.holdings[good.id]))}>卖出</button>
         </li>
       {:else}
         <li class="empty">还没有货物。</li>
@@ -112,7 +127,7 @@
     <h2>北京地图</h2>
     <div class="loc-grid">
       {#each LOCATIONS as loc (loc.id)}
-        <button class:active={g.loc === loc.id} onclick={() => moveToLoc(loc.id)}>
+        <button class:active={g.loc === loc.id} onclick={() => goTo(loc.id)}>
           {loc.name}
         </button>
       {/each}

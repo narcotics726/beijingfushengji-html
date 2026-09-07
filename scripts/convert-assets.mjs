@@ -21,9 +21,10 @@ import path from 'node:path'
 
 const ROOT = process.cwd()
 const REF = path.join(ROOT, 'reference')
-const OUT_IMG = path.join(ROOT, 'assets', 'img')
-const OUT_AUDIO = path.join(ROOT, 'assets', 'audio')
-const OUT_TEXT = path.join(ROOT, 'assets', 'text')
+// 输出到 public/assets（Vite 原样拷到 dist，保留子目录与文件名，file:// 相对路径可加载）
+const OUT_IMG = path.join(ROOT, 'public', 'assets', 'img')
+const OUT_AUDIO = path.join(ROOT, 'public', 'assets', 'audio')
+const OUT_TEXT = path.join(ROOT, 'public', 'assets', 'text')
 
 const IMG_EXT = new Set(['.bmp', '.jpg', '.jpeg', '.ico', '.gif', '.png'])
 const AUDIO_EXT = new Set(['.wav'])

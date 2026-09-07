@@ -60,7 +60,13 @@ export function runCommercialEvents(state: GameState, rnd: Random): GameEvent[] 
         events.push(evDialog(`可惜!俺租的房子太小，只能放${state.coat}个物品。`))
         return events
       }
-      state.holdings[e.drug] += addcount
+      // 赠送：已在库则只叠数量、成本不变；新入库则成本记 0（源码行为）
+      if (state.holdings[e.drug] > 0) {
+        state.holdings[e.drug] += addcount
+      } else {
+        state.holdings[e.drug] = addcount
+        state.holdCost[e.drug] = 0
+      }
       state.total += addcount
     }
   }

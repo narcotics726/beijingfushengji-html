@@ -36,6 +36,18 @@ describe('买入（受现金与仓容限制）', () => {
     expect(s.total).toBe(3)
     expect(buy(s, 0, 99)).toBe(7) // 容量 100，已装 3，剩 97；但现金只够 7
   })
+  it('buy 记录加权平均进价', () => {
+    const s = createInitialState()
+    s.cash = 10000
+    s.prices[0] = 100
+    buy(s, 0, 2) // 2 件 @100
+    expect(s.holdCost[0]).toBe(100)
+    s.prices[0] = 200
+    s.cash = 10000
+    buy(s, 0, 3) // 再加 3 件 @200 → (200*3+100*2)/5 = 160
+    expect(s.holdCost[0]).toBe(160)
+    expect(s.holdings[0]).toBe(5)
+  })
 })
 
 describe('卖出（按当前价）', () => {

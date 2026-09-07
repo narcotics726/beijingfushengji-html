@@ -17,7 +17,7 @@ import {
 } from '../core/storage'
 
 function snap(s: GameState): GameState {
-  return { ...s, prices: [...s.prices], holdings: [...s.holdings] }
+  return { ...s, prices: [...s.prices], holdings: [...s.holdings], holdCost: [...s.holdCost] }
 }
 
 let state: GameState = newGame(createRng())
@@ -118,10 +118,12 @@ export function bankWithdrawAction(amt: number) {
 }
 export function hospitalAction(points: number) {
   pushEvents(A.hospitalTreat(state, points) as unknown as GameEvent[])
+  if (state.soundEnabled) import('./sound').then((m) => m.playSound('opendoor.wav'))
   refresh()
 }
 export function postOfficeAction() {
   pushEvents(A.postOffice(state) as unknown as GameEvent[])
+  if (state.soundEnabled) import('./sound').then((m) => m.playSound('opendoor.wav'))
   refresh()
 }
 export function repayAction(amt: number) {

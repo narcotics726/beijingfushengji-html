@@ -24,7 +24,7 @@ iconv -f GBK -t UTF-8 reference/SelectionDlg.cpp > _u8tmp/SelectionDlg.cpp
 ## 架构与构建
 
 - `src/core/`：规则引擎，**框架无关纯 TS/JS**（可在 Node 测）。`src/ui/`：Svelte 表现层 + `skins/`（可换肤；默认 `retro`，移动优化是皮肤变体）。
-- **单文件自包含**：Vite 把 JS/CSS 内联进 `index.html`；图片/音频/文本走相对路径。`file://` 下跨文件 ES module 会被浏览器 CORS 拦，**故必须内联 JS/CSS**。
+- **单文件自包含**：Vite 把 JS/CSS 内联进 `index.html`；资源（图片/音频/文本）放 **`public/assets/`**，Vite 原样拷到 `dist/assets/`，运行时用**相对路径**引用（`new URL('assets/audio/x.wav', document.baseURI)`）。`file://` 下跨文件 ES module 会被浏览器 CORS 拦，**故必须内联 JS/CSS**；资源用相对路径即可 file:// 加载。库存列显示的是**加权平均进价** `holdCost`，非当日市价。
 - core 数据驱动 + 带 hook；**core 只发语义事件，皮肤决定怎么渲染**（为换肤/扩展玩法预留）。买卖/银行/住院等均在 `core/actions`。
 
 ## 里程碑（PLAN.md §6）

@@ -26,6 +26,7 @@ export interface GameState {
   city: number // m_City（1 北京 / 2 上海）
   prices: number[] // 当日黑市价（8 个，0 表示当日不出售）
   holdings: number[] // 各货物数量（8 个，sum = total）
+  holdCost: number[] // 各货物加权平均进价（m_list2「买进价格」）
   soundEnabled: boolean // 声音开关（m_bCloseSound 取反）
   hack: boolean // m_bHackActs（是否允许黑客事件）
   over: boolean // 游戏是否已结束
@@ -47,6 +48,7 @@ export function createInitialState(): GameState {
     city: CITY_BEIJING,
     prices: new Array(8).fill(0),
     holdings: new Array(8).fill(0),
+    holdCost: new Array(8).fill(0),
     soundEnabled: true,
     hack: false,
     over: false,
