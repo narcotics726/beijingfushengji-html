@@ -28,6 +28,7 @@
   import { LOCATIONS } from './core/data/locations'
   import { parseTicker } from './core/data/texts'
   import theme from './ui/skins/retro/theme'
+  import LedNumber from './ui/components/LedNumber.svelte'
 
   const g = $derived($game)
   const marketGoods = $derived(GOODS.filter((x) => g.prices[x.id] > 0))
@@ -129,14 +130,14 @@
     }
   }}
 >
-  <span class="led cash">现{g.cash}</span>
-  <span class="led debt">债{g.debt}</span>
-  <span class="led health">康{g.health}</span>
+  <span class="cell"><span class="lab">现</span><LedNumber value={g.cash} lit="#2ee22e" height={22} /></span>
+  <span class="cell"><span class="lab">债</span><LedNumber value={g.debt} lit="#e03030" height={22} /></span>
+  <span class="cell"><span class="lab">康</span><LedNumber value={g.health} lit="#2eb0e0" height={22} /></span>
   <span class="where">@ {locName}</span>
   {#if showStatus}
-    <span class="led bank">存{g.bank}</span>
-    <span class="led fame">名{g.fame}</span>
-    <span class="led cap">位 {g.total}/{g.coat}</span>
+    <span class="cell"><span class="lab">存</span><LedNumber value={g.bank} lit="#2ee22e" height={16} /></span>
+    <span class="cell"><span class="lab">名</span><LedNumber value={g.fame} lit={g.fame < 60 ? '#e03030' : '#2ee22e'} height={16} /></span>
+    <span class="cell"><span class="lab">位</span><LedNumber value={g.total} lit="#e08020" height={16} /><span class="sl">/</span><LedNumber value={g.coat} lit="#e08020" height={16} /></span>
   {/if}
 </section>
 </div>
@@ -336,10 +337,9 @@
   .banner { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0.28; }
   .top-actions { position: relative; z-index: 1; display: flex; gap: 6px; }
   .statusbar { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 0.92em; margin: 6px; }
-  .led { font-family: "Courier New", monospace; font-weight: 700; background: #0a160a; color: var(--fsj-led-on); border: 1px solid #0a200a; border-radius: 3px; padding: 1px 5px; }
-  .led.cash { color: var(--fsj-cash); }
-  .led.debt { color: var(--fsj-debt); }
-  .led.health { color: var(--fsj-health); }
+  .cell { display: inline-flex; align-items: center; gap: 2px; background: #0a0a0a; border: 1px solid #24262a; border-radius: 3px; padding: 1px 4px; }
+  .lab { font-size: 0.78em; color: var(--fsj-dim); }
+  .sl { color: var(--fsj-dim); }
   .where { margin-left: auto; font-weight: 700; background: var(--fsj-accent); color: #fff; padding: 1px 6px; border-radius: 3px; }
   .loc-now { font-weight: 700; background: var(--fsj-accent); color: #fff; padding: 1px 6px; border-radius: 3px; }
   .core { flex: 1; min-height: 0; overflow: auto; display: block; padding: 0 4px 4px; }
