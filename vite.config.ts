@@ -7,10 +7,15 @@ import { viteSingleFile } from 'vite-plugin-singlefile'
 // 图片/音频/文本放在 assets/ 走相对路径，file:// 下可正常加载。
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [svelte(), viteSingleFile()],
+  base: './', // 相对路径，保证 file:// 双击时资源可加载
+  plugins: [svelte(), viteSingleFile({ useRecommendedBuildConfig: false })],
   build: {
     target: 'esnext',
     outDir: 'dist',
     assetsDir: 'assets',
+    cssCodeSplit: false, // 单份 CSS，便于内联
+    // 只把 JS/CSS 内联进 index.html；音频/图片保持为独立文件（相对路径，file:// 可加载）。
+    assetsInlineLimit: 4096,
+    rollupOptions: { output: { codeSplitting: false } },
   },
 })
