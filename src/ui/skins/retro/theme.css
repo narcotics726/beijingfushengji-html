@@ -24,8 +24,8 @@
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; }
-#app { display: flex; flex-direction: column; }
+html, body { margin: 0; padding: 0; overflow: hidden; }
+#app { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 body {
   font-family: "Segoe UI", system-ui, sans-serif;
   background: var(--fsj-bg);

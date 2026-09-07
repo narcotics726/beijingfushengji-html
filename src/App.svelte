@@ -342,8 +342,10 @@
   .led.health { color: var(--fsj-health); }
   .where { margin-left: auto; font-weight: 700; background: var(--fsj-accent); color: #fff; padding: 1px 6px; border-radius: 3px; }
   .loc-now { font-weight: 700; background: var(--fsj-accent); color: #fff; padding: 1px 6px; border-radius: 3px; }
-  .core { display: block; padding: 0 4px 4px; }
-  .pane { margin-bottom: 4px; background: var(--fsj-panel); border: 2px solid var(--fsj-border); border-radius: 6px; padding: 4px 6px; }
+  .core { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 4px; padding: 0 4px 4px; }
+  .pane { flex: 1; min-height: 0; display: flex; flex-direction: column; background: var(--fsj-panel); border: 2px solid var(--fsj-border); border-radius: 6px; padding: 4px 6px; }
+  .pane h2 { margin: 0 0 3px; font-size: 0.84em; color: var(--fsj-accent); border-bottom: 1px solid var(--fsj-border); padding-bottom: 2px; }
+  .list { flex: 1; min-height: 0; overflow: auto; }
   .pane h2 { margin: 0 0 3px; font-size: 0.84em; color: var(--fsj-accent); border-bottom: 1px solid var(--fsj-border); padding-bottom: 2px; }
   .row { display: flex; align-items: center; gap: 5px; border-bottom: 1px dashed var(--fsj-border); padding: 2px 0; }
   .fillbar { position: relative; flex: 1; height: 32px; background: var(--fsj-panel2); border: 1px solid var(--fsj-border); border-radius: 4px; overflow: hidden; }
