@@ -2,7 +2,7 @@
 // 用 writable 简化；每次操作后把 game 设为深拷贝快照以触发组件渲染。
 import { writable } from 'svelte/store'
 import type { GameState } from '../core/state'
-import { createRng, type Random } from '../core/rng'
+import { createRng, type SeedableRandom } from '../core/rng'
 import { newGame, moveTo, getScore, type GameEvent } from '../core/engine'
 import * as A from '../core/actions'
 import {
@@ -20,8 +20,47 @@ function snap(s: GameState): GameState {
   return { ...s, prices: [...s.prices], holdings: [...s.holdings], holdCost: [...s.holdCost] }
 }
 
-let state: GameState = newGame(createRng())
-let rng: Random = createRng()
+// 存读档（M1.5）：任意改动都存；刷新自动读档续玩；「新游戏」清档重开。
+const SAVE_KEY = 'fsj:save'
+function hasStore(): boolean {
+  try {
+    return typeof localStorage !== 'undefined'
+  } catch {
+    return false
+  }
+}
+function persist() {
+  if (!hasStore()) return
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify({ state, rngA: rng.getState() }))
+  } catch {
+    /* 忽略 */
+  }
+}
+function tryLoad(): { state: GameState; rngA: number } | null {
+  if (!hasStore()) return null
+  try {
+    const raw = localStorage.getItem(SAVE_KEY)
+    if (!raw) return null
+    const d = JSON.parse(raw)
+    // 只恢复「未结束」的对局
+    if (d && d.state && typeof d.rngA === 'number' && !d.state.over) return d
+  } catch {
+    /* 忽略 */
+  }
+  return null
+}
+
+let rng: SeedableRandom = createRng()
+let state: GameState = newGame(rng)
+// 启动读档：有过天存档且未结束 → 恢复续玩（并恢复随机序列状态）
+{
+  const saved = tryLoad()
+  if (saved) {
+    state = saved.state
+    rng.setState(saved.rngA)
+  }
+}
 
 export const game = writable<GameState>(snap(state))
 export const events = writable<GameEvent[]>([])
@@ -40,6 +79,7 @@ export const settings = writable<Settings>(getSettings())
 
 function refresh() {
   game.set(snap(state))
+  persist() // 任意改动都存（含过天/买卖/银行/住院等）
 }
 
 function pushEvents(evs: { kind: string; text: string; sound?: string }[]) {
