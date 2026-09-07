@@ -107,6 +107,8 @@
   }
 </script>
 
+<!-- 常驻顶区：标题 + 状态条一起 sticky -->
+<div class="sticky-top">
 <!-- 顶部标题 -->
 <header class="topbar">
   <div class="banner" style="background-image:url({theme.bg})"></div>
@@ -140,6 +142,7 @@
     <span class="led cap">位 {g.total}/{g.coat}</span>
   {/if}
 </section>
+</div>
 
 <main class="scroll">
   <!-- 位置条 → 弹选地点 -->
@@ -340,7 +343,8 @@
 {/if}
 
 <style>
-  .topbar { position: sticky; top: 0; z-index: 9; background: var(--fsj-accent); color: var(--fsj-title); display: flex; align-items: center; gap: 8px; padding: 6px 10px; overflow: hidden; }
+  .sticky-top { position: sticky; top: 0; z-index: 9; }
+  .topbar { position: relative; background: var(--fsj-accent); color: var(--fsj-title); display: flex; align-items: center; gap: 8px; padding: 6px 10px; overflow: hidden; }
   .topbar h1 { margin: 0; font-size: 1.05em; flex: 1; position: relative; z-index: 1; text-shadow: 1px 1px 2px #000; }
   .banner { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0.28; }
   .top-actions { position: relative; z-index: 1; display: flex; gap: 6px; }
