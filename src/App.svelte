@@ -57,6 +57,9 @@
   function qv(map: Record<number, number>, id: number) {
     return map[id] ?? 0
   }
+  function pct(max: number, val: number) {
+    return max <= 0 ? 0 : Math.min(100, Math.max(0, Math.round((val / max) * 100)))
+  }
   function goTo(id: number) {
     moveToLoc(id)
     showLocation = false
@@ -151,15 +154,12 @@
     <div class="list">
       {#each marketGoods as good (good.id)}
         <div class="row">
-          <div class="row-head">
-            <span class="name">{good.name}</span>
-            <span class="price">{g.prices[good.id]} 元</span>
+          <div class="fillbar">
+            <div class="fill" style="width:{pct(maxBuyQty(g, good.id), qv(buyQty, good.id))}%"></div>
+            <span class="label"><span class="nm">{good.name}</span><span class="inf">{g.prices[good.id]}元 ×{qv(buyQty, good.id)}</span></span>
+            <input class="range" type="range" min="0" max={maxBuyQty(g, good.id)} step="1" bind:value={buyQty[good.id]} />
           </div>
-          <div class="row-ctrl">
-            <input type="range" min="0" max={maxBuyQty(g, good.id)} bind:value={buyQty[good.id]} />
-            <b class="qty">{qv(buyQty, good.id)}</b>
-            <button disabled={maxBuyQty(g, good.id) <= 0} onclick={() => buyAction(good.id, qv(buyQty, good.id))}>买进</button>
-          </div>
+          <button class="act" disabled={maxBuyQty(g, good.id) <= 0} onclick={() => buyAction(good.id, qv(buyQty, good.id))}>买</button>
         </div>
       {:else}
         <div class="empty">今日黑市无货。</div>
@@ -172,15 +172,12 @@
     <div class="list">
       {#each houseGoods as good (good.id)}
         <div class="row">
-          <div class="row-head">
-            <span class="name">{good.name}</span>
-            <span class="price">进{g.holdCost[good.id]}元 ×{g.holdings[good.id]}</span>
+          <div class="fillbar">
+            <div class="fill" style="width:{pct(maxSellQty(g, good.id), qv(sellQty, good.id))}%"></div>
+            <span class="label"><span class="nm">{good.name}</span><span class="inf">进{g.holdCost[good.id]}元 ×{g.holdings[good.id]}</span></span>
+            <input class="range" type="range" min="0" max={maxSellQty(g, good.id)} step="1" bind:value={sellQty[good.id]} />
           </div>
-          <div class="row-ctrl">
-            <input type="range" min="0" max={maxSellQty(g, good.id)} bind:value={sellQty[good.id]} />
-            <b class="qty">{qv(sellQty, good.id)}</b>
-            <button disabled={maxSellQty(g, good.id) <= 0} onclick={() => sellAction(good.id, qv(sellQty, good.id))}>卖出</button>
-          </div>
+          <button class="act" disabled={maxSellQty(g, good.id) <= 0} onclick={() => sellAction(good.id, qv(sellQty, good.id))}>卖</button>
         </div>
       {:else}
         <div class="empty">还没有货物。</div>
@@ -348,11 +345,14 @@
   .pane { flex: 1; min-height: 0; display: flex; flex-direction: column; background: var(--fsj-panel); border: 2px solid var(--fsj-border); border-radius: 6px; padding: 6px 8px; }
   .pane h2 { margin: 0 0 4px; font-size: 0.86em; color: var(--fsj-accent); border-bottom: 1px solid var(--fsj-border); padding-bottom: 2px; }
   .list { flex: 1; overflow: auto; }
-  .row { border-bottom: 1px dashed var(--fsj-border); padding: 4px 0; }
-  .row-head { display: flex; justify-content: space-between; font-size: 0.95em; }
-  .row-ctrl { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
-  .row-ctrl input[type="range"] { flex: 1; }
-  .qty { min-width: 2.2em; text-align: center; font-family: "Courier New", monospace; }
+  .row { display: flex; align-items: center; gap: 6px; border-bottom: 1px dashed var(--fsj-border); padding: 3px 0; }
+  .fillbar { position: relative; flex: 1; height: 34px; background: var(--fsj-panel2); border: 1px solid var(--fsj-border); border-radius: 4px; overflow: hidden; }
+  .fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--fsj-accent); opacity: 0.4; }
+  .label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 8px; pointer-events: none; font-size: 0.9em; }
+  .label .nm { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%; }
+  .label .inf { font-family: "Courier New", monospace; }
+  .range { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+  .act { min-width: 42px; }
   .empty { color: var(--fsj-dim); padding: 6px; }
   .locrow { display: flex; align-items: center; justify-content: space-between; padding: 2px 8px; font-weight: 700; }
   .loc-now { font-weight: 700; }
