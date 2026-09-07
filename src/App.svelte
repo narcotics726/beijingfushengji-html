@@ -36,6 +36,7 @@
   const locName = $derived(LOCATIONS.find((l) => l.id === g.loc)?.name ?? '—')
   const tickerItems = parseTicker()
   const tickerText = tickerItems.join('　·　')
+  const tickerDur = $derived(Math.max(120, Math.round(tickerText.length * 0.12)))
 
   let buyQty = $state<Record<number, number>>({})
   let sellQty = $state<Record<number, number>>({})
@@ -194,7 +195,7 @@
 <!-- 底部新闻滚动条 -->
 <footer class="ticker">
   <span class="ticker-title">新闻</span>
-  <div class="ticker-track"><span>{tickerText}</span></div>
+  <div class="ticker-track"><span style="animation-duration:{tickerDur}s">{tickerText}</span></div>
 </footer>
 
 <!-- 弹选地点 -->
@@ -354,7 +355,7 @@
   .ticker { position: sticky; bottom: 0; z-index: 9; display: flex; align-items: center; background: #1a1a20; color: var(--fsj-ticker, #ffd400); font-size: 0.85em; overflow: hidden; }
   .ticker-title { background: var(--fsj-accent); color: #fff; padding: 2px 6px; font-size: 0.8em; }
   .ticker-track { white-space: nowrap; overflow: hidden; flex: 1; }
-  .ticker-track span { display: inline-block; padding-left: 100%; animation: ticker 60s linear infinite; }
+  .ticker-track span { display: inline-block; padding-left: 100%; animation: ticker linear infinite; }
   @keyframes ticker { to { transform: translateX(-100%); } }
   .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); display: grid; place-items: center; z-index: 20; padding: 12px; overflow: auto; }
   .box { background: var(--fsj-panel); border: 3px solid var(--fsj-border); border-radius: 8px; padding: 14px; max-width: 96vw; max-height: 86vh; overflow: auto; }
