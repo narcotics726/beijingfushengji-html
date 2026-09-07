@@ -356,8 +356,8 @@
   .empty { color: var(--fsj-dim); padding: 6px; }
   .locrow { display: flex; align-items: center; justify-content: space-between; padding: 2px 8px; font-weight: 700; }
   .loc-now { font-weight: 700; }
-  .subsys-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 6px; }
-  .subsys-grid button { min-height: 40px; font-size: 0.95em; }
+  .subsys-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); gap: 4px; }
+  .subsys-grid button { min-height: 34px; font-size: 0.9em; padding: 2px 4px; }
   .boss { background: #d4b0b0; }
   .danger { background: #e0b0b0; color: #600; }
   .ticker { position: sticky; bottom: 0; z-index: 9; display: flex; align-items: center; background: #1a1a20; color: var(--fsj-ticker, #ffd400); font-size: 0.85em; overflow: hidden; }
