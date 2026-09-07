@@ -143,6 +143,15 @@ describe('邮局还款', () => {
     s.debt = 0
     expect(postOffice(s)[0].text).toContain('你没钱')
   })
+  it('财富正好等于边界值(1000/100000/10000000)落「典范」分支', () => {
+    for (const w of [1000, 100000, 10000000]) {
+      const s = createInitialState()
+      s.cash = w
+      s.bank = 0
+      s.debt = 0
+      expect(postOffice(s)[0].text).toContain('典范')
+    }
+  })
 })
 
 describe('租房扩仓容（OnHouseAgency）', () => {

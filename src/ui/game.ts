@@ -31,6 +31,8 @@ export interface EndResult {
   entered: boolean
   order: number
   top10: ReturnType<typeof getTop10>
+  name: string
+  message: string
 }
 export const endResult = writable<EndResult | null>(null)
 
@@ -81,17 +83,33 @@ function finish() {
   const score = getScore(state)
   const list = getTop10()
   const order = getMyOrder(score, list)
-  let entered = order !== 100
+  const entered = order !== 100
+  const name = '无名氏'
   if (entered) {
-    const next = insertScore(list, {
-      name: '无名氏',
-      score,
-      health: state.health,
-      fame: fameStr(state.fame),
-    })
+    const next = insertScore(list, { name, score, health: state.health, fame: fameStr(state.fame) })
     saveTop10(next)
   }
-  endResult.set({ score, entered, order, top10: getTop10() })
+  // 三则结算台词（源码 OnExit）
+  let message: string
+  if (score <= 0) message = '《北京游戏报》报道: 玩家“无名氏”在北京没挣着钱，被遣送回家。'
+  else if (!entered) message = `您挣的钱${score}元人民币太少，没能进入富人前10名，下次努力哦!`
+  else if (score > 10000000) message = `您挣的钱${score}元人民币很高，建议您发给作者进行高手排行。`
+  else message = ''
+  endResult.set({ score, entered, order, top10: getTop10(), name, message })
+}
+
+// 进榜后改玩家名：新条目位于 order（insertScore 在第一个 score>= 处插入）
+export function setEndName(nm: string) {
+  endResult.update((er) => {
+    if (!er) return er
+    const finalName = nm.trim() || '无名氏'
+    const top10 = [...er.top10]
+    if (er.entered && er.order >= 0 && er.order < top10.length) {
+      top10[er.order] = { ...top10[er.order], name: finalName }
+      saveTop10(top10)
+    }
+    return { ...er, name: finalName, top10 }
+  })
 }
 
 export function exitGame() {
@@ -107,7 +125,19 @@ export function buyAction(goodId: number, qty: number) {
 }
 export function sellAction(goodId: number, qty: number) {
   const n = A.sell(state, goodId, qty)
-  if (n > 0 && state.soundEnabled) import('./sound').then((m) => m.playSound('money.wav'))
+  if (n <= 0) {
+    refresh()
+    return
+  }
+  if (state.soundEnabled) import('./sound').then((m) => m.playSound('money.wav'))
+  // 卖违禁品的一次性名声警告（源码 bad_fame1/2）
+  if (goodId === 4 && !state.soldBookOnce) {
+    state.soldBookOnce = true
+    pushEvents([{ kind: 'dialog', text: '买卖《上海小宝贝》（禁书）,污染社会,俺的名声变坏了啊!' }])
+  } else if (goodId === 3 && !state.soldWineOnce) {
+    state.soldWineOnce = true
+    pushEvents([{ kind: 'dialog', text: '买卖假白酒（剧毒！）,危害社会，俺的名声下降了.' }])
+  }
   refresh()
 }
 export function bankDepositAction(amt: number) {
@@ -134,7 +164,6 @@ export function repayAction(amt: number) {
 }
 export function rentAction() {
   pushEvents(A.rentHouse(state) as unknown as GameEvent[])
-  if (state.soundEnabled) import('./sound').then((m) => m.playSound('opendoor.wav'))
   refresh()
 }
 export function wangbaAction() {

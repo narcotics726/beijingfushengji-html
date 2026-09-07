@@ -151,11 +151,12 @@ describe('住院（health<85 && timeLeft>3；delay_day=1+randInt(2)；load=delay
 })
 
 describe('抢钱事件（命中 RandomNum(1000)；现金整型除法）', () => {
-  it('事件0（ratoi10）：cash=floor((cash/100)*(100-10))', () => {
-    const s = defaultState({ cash: 1000 })
+  it('事件0（ratoi10）：cash=floor(cash/100)*(100-10)（先除100再乘）', () => {
+    const s = defaultState({ cash: 1234 })
     const events = runStealEvent(s, stub([rv(1000, 60)])) // randInt(1000)=60 → 60%60=0 命中
     expect(events.length).toBe(1)
-    expect(s.cash).toBe(Math.floor((1000 / 100) * 90)) // 900
+    // 整数除法：1234/100=12 → 12*90=1080（而非 floor(12.34*90)=1110）
+    expect(s.cash).toBe(Math.floor(1234 / 100) * 90) // 1080
   })
 })
 

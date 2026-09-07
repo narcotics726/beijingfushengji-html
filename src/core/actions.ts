@@ -81,32 +81,30 @@ export function bankWithdraw(state: GameState, amount: number): number {
   return n
 }
 
-/** 去医院治疗 points 点（3500元/点）；现金不足拒绝治疗（OnHospital）。 */
+/** 去医院治疗 points 点（3500元/点）；现金不足拒绝治疗（OnHospital）。治疗成功无确认台词。 */
 export function hospitalTreat(state: GameState, points: number): ActionEvent[] {
   if (state.health >= 100) {
     return [evDialog('小护士笑咪咪地望着俺："大哥！神经科这边挂号."')]
   }
   const pts = Math.max(1, Math.min(Math.floor(points), 100 - state.health))
   if (pts * 3500 > state.cash) {
-    return [evDialog('医生说，"钱不够哎! 拒绝治疗。"')]
+    return [evDialog('医生说，“钱不够哎! 拒绝治疗。”')]
   }
   state.health += pts
   state.cash -= pts * 3500
-  return [
-    evDialog(
-      `大夫高兴地拍着手：“您的健康点数是${state.health - pts}，需要治疗的点数是${pts}。治疗完毕，健康恢复。`, // 简版，UI 可再细调
-    ),
-  ]
+  return []
 }
 
 /** 邮局：无欠债按财富档位给台词；有欠债还款（OnPostoffice）。 */
 export function postOffice(state: GameState): ActionEvent[] {
   if (state.debt === 0) {
     const wealth = state.cash + state.bank
+    // 逐字对照源码边界：1000/100000/10000000 落在其间的“典范”分支
     if (wealth < 1000) return [evDialog('村长嘿嘿笑道：“你没钱,有神经病!”')]
-    if (wealth < 100000) return [evDialog('村长朝俺点头："兄弟,您想支援家乡1000元吗？"')]
-    if (wealth < 10000000) return [evDialog('村长在电话中朝俺鞠躬:"富豪!我想把我女儿嫁给您."...')]
-    return [evDialog('村长在电话中朝俺下跪，说："您简直是我亲爹！"')]
+    else if (wealth < 100000 && wealth > 1000) return [evDialog('村长朝俺点头："兄弟,您想支援家乡1000元吗？"')]
+    else if (wealth < 10000000 && wealth > 100000) return [evDialog('村长在电话中朝俺鞠躬:"富豪!我想把我女儿嫁给您."...')]
+    else if (wealth > 10000000) return [evDialog('村长在电话中朝俺下跪，说："您简直是我亲爹！"')]
+    return [evDialog('村长说："您是农村年轻人的典范！"')]
   }
   // 有欠债：提示还款（还款额上限=min(债务,现金)）
   return [
@@ -114,16 +112,16 @@ export function postOffice(state: GameState): ActionEvent[] {
   ]
 }
 
-/** 还款（邮局有欠债时）。金额超过现金则拒绝。 */
+/** 还款（邮局有欠债时）。金额超过现金则拒绝。还款成功无确认台词（与源码一致）。 */
 export function repayDebt(state: GameState, amount: number): ActionEvent[] {
   if (amount > state.cash) {
-    return [evDialog('村长老婆狂吞"雪中丐"补钙片，冷笑道："你还得起吗?"')]
+    return [evDialog('村长老婆狂吞“雪中丐”补钙片，冷笑道：“你还得起吗?”')]
   }
   const n = Math.max(0, Math.min(amount, state.debt, state.cash))
   if (n === 0) return []
   state.debt -= n
   state.cash -= n
-  return [evDialog(`已还${n}元，还欠${state.debt}元。`)]
+  return []
 }
 
 /** 租房扩仓容（OnHouseAgency）：myCoat==140 不放；现金<30000 不放；否则出租并 +10 仓容。 */
@@ -158,7 +156,7 @@ export function visitWangba(state: GameState, rnd: Random): ActionEvent[] {
   return [evDialog(`感谢电信改革，可以免费上网! 还挣了美国网络广告费${i + 1}元，嘿嘿!`)]
 }
 
-/** 机场/网络俱乐部：播 airport.wav（音效由 UI 播），查看联网内容。 */
+/** 机场/网络俱乐部：仅播 airport.wav（音效由 UI 播），打开（M1 为空白）网络俱乐部，无发明台词。 */
 export function visitAirport(state: GameState): ActionEvent[] {
-  return [evNews('已到达首都国际机场，欢迎接入网络俱乐部。')]
+  return []
 }

@@ -123,10 +123,11 @@ export function runStealEvent(state: GameState, rnd: Random): GameEvent[] {
     if (randInt(1000, rnd) % e.freq !== 0) continue
     if (i !== 4 && i !== 5) {
       events.push(evDialog(`${e.msg}俺的银子减少了${e.ratoi}%。`))
-      state.cash = Math.floor((state.cash / 100) * (100 - e.ratoi))
+      // 源码 (MyCash/100)*(100-ratoi)：MyCash/100 是整数(截断)除法
+      state.cash = Math.floor(state.cash / 100) * (100 - e.ratoi)
     } else if (state.bank > 0) {
       events.push(evDialog(`${e.msg}俺的存款减少了${e.ratoi}%。，哎呀!`))
-      state.bank = Math.floor((state.bank / 100) * (100 - e.ratoi))
+      state.bank = Math.floor(state.bank / 100) * (100 - e.ratoi)
     }
     break
   }

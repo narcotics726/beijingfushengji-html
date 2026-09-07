@@ -30,6 +30,8 @@ export interface GameState {
   soundEnabled: boolean // 声音开关（m_bCloseSound 取反）
   hack: boolean // m_bHackActs（是否允许黑客事件）
   over: boolean // 游戏是否已结束
+  soldBookOnce: boolean // 卖禁书名声警告是否已弹过（bad_fame1）
+  soldWineOnce: boolean // 卖假酒名声警告是否已弹过（bad_fame2）
 }
 
 /** 生成本局起始的纯初始状态（不含开局利息/价格，那些由 engine.newGame 施加）。 */
@@ -52,5 +54,7 @@ export function createInitialState(): GameState {
     soundEnabled: true,
     hack: false,
     over: false,
+    soldBookOnce: false,
+    soldWineOnce: false,
   }
 }

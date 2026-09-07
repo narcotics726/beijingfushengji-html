@@ -18,6 +18,7 @@
     startNewGame,
     advanceEvent,
     exitGame,
+    setEndName,
     updateSettings,
   } from './ui/game'
   import { maxBuyQty } from './core/actions'
@@ -32,6 +33,8 @@
   let amountDlg = $state<null | { mode: 'deposit' | 'withdraw' | 'heal' | 'repay'; label: string; max: number }>(null)
   let amountValue = $state(1)
   let showSettings = $state(false)
+  let showBank = $state(false)
+  let showBoss = $state(false)
 
   const marketGoods = $derived(GOODS.filter((x) => g.prices[x.id] > 0))
   const houseGoods = $derived(GOODS.filter((x) => g.holdings[x.id] > 0))
@@ -54,6 +57,20 @@
   function goTo(id: number) {
     moveToLoc(id)
   }
+  // 银行：播开门音 + 打开存取款面板（源版 CEnterBank）
+  function goBank() {
+    if (g.soundEnabled) playSound('opendoor.wav')
+    showBank = true
+  }
+  function bankDep() {
+    showBank = false
+    openAmount('deposit', '您存多少钱?', g.cash)
+  }
+  function bankWit() {
+    showBank = false
+    openAmount('withdraw', '您提走多少钱?', g.bank)
+  }
+
   // 医院：健康满 → 直接「大哥！神经科这边挂号」；否则开治疗点数框(默认=治满)
   function goHospital() {
     if (g.health >= 100) hospitalAction(0)
@@ -156,12 +173,13 @@
 
 <!-- 底栏子系统按钮 -->
 <footer class="actions">
-  <button onclick={() => openAmount('deposit', '您存多少钱?', g.cash)}>银行</button>
+  <button onclick={() => goBank()}>银行</button>
   <button onclick={() => goHospital()}>医院</button>
   <button onclick={() => goPost()}>邮局</button>
   <button onclick={() => rentAction()}>租房</button>
   <button onclick={() => wangbaAction()}>网吧</button>
   <button onclick={() => airportAction()}>机场</button>
+  <button class="boss" onclick={() => (showBoss = true)}>老板来了</button>
   <button class="danger" onclick={() => exitGame()}>离开</button>
 </footer>
 
@@ -177,6 +195,31 @@
       </div>
     </div>
   </div>
+{/if}
+
+<!-- 银行（存取款） -->
+{#if showBank}
+  <div class="modal">
+    <div class="box">
+      <h2>银行</h2>
+      <p>客户您好! 您的现金是{g.cash}, 您的存款是{g.bank}. 请问您要...</p>
+      <div class="row">
+        <button onclick={() => bankDep()}>存款</button>
+        <button onclick={() => bankWit()}>取款</button>
+        <button onclick={() => (showBank = false)}>关闭</button>
+      </div>
+    </div>
+  </div>
+{/if}
+
+<!-- Boss「老板来了」保护窗：一键遮盖全场 -->
+{#if showBoss}
+  <button class="boss-veil" type="button" onclick={() => (showBoss = false)}>
+    <span class="boss-screen">
+      <h1>老板来了！</h1>
+      <p>（假装工作/汇报，点击任意处离开）</p>
+    </span>
+  </button>
 {/if}
 
 <!-- 设置 -->
@@ -208,13 +251,21 @@
   <div class="modal">
     <div class="box">
       <h2>结算</h2>
-      <p>得分：{$endResult.score} 元</p>
-      <p>{$endResult.entered ? `恭喜进入前 10（第 ${$endResult.order + 1} 名）` : '未能进入前 10，下次努力!'}</p>
-      <ol class="top10">
-        {#each $endResult.top10 as h, i (i)}
-          <li>{h.name} — {h.score}元（{h.fame}）</li>
-        {/each}
-      </ol>
+      {#if $endResult.score > 0}
+        <p>得分：{$endResult.score} 元</p>
+        {#if $endResult.message}<p>{$endResult.message}</p>{/if}
+        {#if $endResult.entered}
+          <label>你的名字：<input type="text" value={$endResult.name} onchange={(e) => setEndName(e.currentTarget.value)} /></label>
+          <p>恭喜进入前 10（第 {$endResult.order + 1} 名）</p>
+        {/if}
+        <ol class="top10">
+          {#each $endResult.top10 as h, i (i)}
+            <li>{h.name} — {h.score}元（{h.fame}）</li>
+          {/each}
+        </ol>
+      {:else}
+        <p>{$endResult.message}</p>
+      {/if}
       <div class="row">
         <button onclick={() => startNewGame()}>再玩一把</button>
         <button onclick={() => (endResult.set(null))}>关闭</button>
@@ -253,6 +304,11 @@
   .row button { padding: 8px 14px; }
   .event-text { font-size: 1.05em; line-height: 1.5; white-space: pre-wrap; }
   .top10 { margin: 6px 0; padding-left: 1.2em; }
+  .boss-veil { position: fixed; inset: 0; z-index: 20; background: #0a3050; display: grid; place-items: center; cursor: pointer; }
+  .boss-screen { text-align: center; color: #f0f0b0; font-family: Georgia, serif; }
+  .boss-screen h1 { font-size: 2.4em; margin: 0 0 8px; letter-spacing: 0.2em; }
+  .boss-screen p { color: #cbd7e6; }
+  .boss { background: #caa; }
   @media (min-width: 760px) {
     .layout { grid-template-columns: 1fr 1fr; }
     .status, .map { grid-column: 1 / -1; }
