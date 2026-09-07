@@ -116,17 +116,17 @@
   </div>
 </header>
 
-<!-- 状态条 常驻（两行，全显示） -->
+<!-- 状态条 常驻（两行，全显示，均匀分布） -->
 <section class="statusbar panel">
-  <div class="srow">
+  <div class="srow row1">
     <span class="cell"><span class="lab">现金</span><LedNumber value={g.cash} lit="#2ee22e" height={28} /></span>
     <span class="cell"><span class="lab">欠债</span><LedNumber value={g.debt} lit="#e03030" height={28} /></span>
     <span class="cell"><span class="lab">健康</span><LedNumber value={g.health} lit="#2eb0e0" height={28} /></span>
   </div>
-  <div class="srow">
-    <span class="cell"><span class="lab">存款</span><LedNumber value={g.bank} lit="#2ee22e" height={28} /></span>
-    <span class="cell"><span class="lab">名声</span><LedNumber value={g.fame} lit={g.fame < 60 ? '#e03030' : '#2ee22e'} height={28} /></span>
-    <span class="cell"><span class="lab">物品</span><LedNumber value={g.total} lit="#e08020" height={28} /><span class="sl">/</span><LedNumber value={g.coat} lit="#e08020" height={28} /></span>
+  <div class="srow row2">
+    <span class="cell"><span class="lab">存款</span><LedNumber value={g.bank} lit="#2ee22e" height={20} /></span>
+    <span class="cell"><span class="lab">名声</span><LedNumber value={g.fame} lit={g.fame < 60 ? '#e03030' : '#2ee22e'} height={20} /></span>
+    <span class="cell"><span class="lab">物品</span><LedNumber value={g.total} lit="#e08020" height={20} /><span class="sl">/</span><LedNumber value={g.coat} lit="#e08020" height={20} /></span>
   </div>
 </section>
 </div>
@@ -326,7 +326,9 @@
   .banner { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0.28; }
   .top-actions { position: relative; z-index: 1; display: flex; gap: 6px; }
   .statusbar { display: flex; flex-direction: column; gap: 5px; margin: 8px 6px; }
-  .srow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .srow { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .srow.row1 .lab { font-weight: 700; }
+  .srow.row2 .lab { font-size: 0.72em; font-weight: 600; }
   .cell { display: inline-flex; align-items: center; gap: 3px; background: #0a0a0a; border: 1px solid #24262a; border-radius: 3px; padding: 2px 6px; }
   .lab { font-size: 0.82em; color: var(--fsj-dim); }
   .sl { color: var(--fsj-dim); }
