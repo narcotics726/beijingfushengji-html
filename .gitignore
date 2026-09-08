@@ -5,7 +5,9 @@ desktop.ini
 *.log
 
 # ── 依赖 / 工具链 ───────────────────────────────────────────
-node_modules/
+# 不带斜杠：worktree 里常用 `ln -s ../../node_modules node_modules`，
+# 符号链接不是目录，`node_modules/` 匹配不到，会被误 add
+node_modules
 .npm-cache/
 
 # ── 原始游戏源码：仅作本地开发参考 ────────────────────────────
@@ -28,6 +30,9 @@ _u8tmp/
 
 # ── 全量素材重建输出（`npm run assets -- --all`，不参与构建）──
 _assets_all/
+
+# ── git worktree 工作树（开发一律在此进行，见 AGENTS.md「开发流程」）──
+.worktrees/
 
 # ── Obsidian / 临时抓取 ─────────────────────────────────────
 .scratch_*/
