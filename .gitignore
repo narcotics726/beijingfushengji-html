@@ -26,6 +26,9 @@ dist/
 # ── GBK 转码临时目录（读 reference 源码用）───────────────────
 _u8tmp/
 
+# ── 全量素材重建输出（`npm run assets -- --all`，不参与构建）──
+_assets_all/
+
 # ── Obsidian / 临时抓取 ─────────────────────────────────────
 .scratch_*/
 .tmp/

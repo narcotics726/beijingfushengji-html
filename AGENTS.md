@@ -6,7 +6,7 @@
 - `src/core/`：纯 TS 规则引擎（state/rng/engine/actions/storage + data/），框架无关可在 Node 测。
 - `src/ui/`：`game.ts`（Svelte store 接线）、`sound.ts`（相对路径音频）、`App.svelte`（主界面）。
 - `tests/`：oracle（规则）+ actions + store（完整一局）+ App SSR，全部通过。
-- `reference/`（GBK 源码，git 忽略，勿改）；`public/assets/`（转档资源，Vite 拷到 dist/assets）；`dist/`（构建产物，git 忽略）；`scripts/convert-assets.mjs`（转档管线）。
+- `reference/`（GBK 源码，git 忽略，勿改）；`public/assets/`（**只放被代码真正引用的白名单素材**——背景图 + 16 个音效，Vite 拷到 dist/assets）；`dist/`（构建产物，git 忽略）；`scripts/convert-assets.mjs`（转档管线：默认白名单，`--all` 全量重建到 gitignore 的 `_assets_all/`）。
 - 里程碑：M1 完成 → M2 移动皮肤/复古质感 → M3 延后（上海模式/纯文案框/帮助页）。
 
 ## ⚠️ 编码（最重要，先看这个）

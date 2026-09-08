@@ -27,7 +27,8 @@ npm run build     # 产出 dist/（单文件 index.html + assets/）
 npm run preview   # 预览构建产物
 npm run check     # svelte-check + tsc
 npm test          # vitest（含 oracle 规则对照测试）
-npm run assets    # 从 reference/ 转档素材（图片/音频/文本）
+npm run assets    # 从 reference/ 转档素材（只产出被代码引用的白名单资源）
+npm run assets -- --all   # 全量转档到 _assets_all/（M3 帮助页/皮肤等按需取用，不参与构建）
 ```
 
 ### 目录
@@ -37,8 +38,8 @@ npm run assets    # 从 reference/ 转档素材（图片/音频/文本）
 | `src/core/` | **框架无关**的纯 TS 规则引擎：`state`/`rng`/`engine`/`actions`/`storage` + `data/`（货物、地点、事件、文本） |
 | `src/ui/` | Svelte 表现层：`game.ts` 接线、`sound.ts` 音效、`App.svelte` 主界面、`components/`、`skins/`（默认 `retro` 皮肤） |
 | `tests/` | oracle（固定种子对照原版公式）+ actions + store（完整一局）+ App SSR/挂载 |
-| `public/assets/` | 转档后的图片/音频/文本，Vite 原样拷入 `dist/assets/` |
-| `scripts/convert-assets.mjs` | 素材转档管线（ImageMagick / ffmpeg / iconv） |
+| `public/assets/` | **只含运行时真正引用的素材**（背景图 `game-backg.png` + 16 个音效），Vite 原样拷入 `dist/assets/` |
+| `scripts/convert-assets.mjs` | 素材转档管线（ImageMagick / ffmpeg / iconv）；默认只产出白名单，`--all` 全量重建到 `_assets_all/` |
 | `reference/` | 原版 C++/MFC 源码（**GBK**，仅本地参考，已 gitignore，勿修改） |
 | `PLAN.md` | 实施计划与行为契约（规则逐条核对） |
 | `AGENTS.md` | 给 AI 协作者的工程约定 |
