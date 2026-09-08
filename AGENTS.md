@@ -34,11 +34,59 @@ iconv -f GBK -t UTF-8 reference/SelectionDlg.cpp > _u8tmp/SelectionDlg.cpp
 - **单文件自包含**：Vite 把 JS/CSS 内联进 `index.html`；资源（图片/音频/文本）放 **`public/assets/`**，Vite 原样拷到 `dist/assets/`，运行时用**相对路径**引用（`new URL('assets/audio/x.wav', document.baseURI)`）。`file://` 下跨文件 ES module 会被浏览器 CORS 拦，**故必须内联 JS/CSS**；资源用相对路径即可 file:// 加载。库存列显示的是**加权平均进价** `holdCost`，非当日市价。
 - core 数据驱动 + 带 hook；**core 只发语义事件，皮肤决定怎么渲染**（为换肤/扩展玩法预留）。买卖/银行/住院等均在 `core/actions`。
 
+## 开发流程：一律走 git worktree（强制）
+
+`main` = **生产分支**，已接 Cloudflare Pages（push 即构建部署）。**禁止在 main 上直接改代码或提交**；所有开发改动都在 worktree 的非 main 分支上进行，验证通过后合并回 main。
+
+### 约定
+
+- 工作树放在仓库内 **`.worktrees/<分支名去斜杠>/`**（已 gitignore；放仓库内便于工具与沙箱访问，勿放到仓库外）。
+- 分支命名：`feat/…`（新功能）、`fix/…`（修 bug）、`chore/…`（工程/文档/资源）、`m3/…`（M3 相关）。
+- **一个任务 = 一个 worktree + 一个分支**；合并后立即 `worktree remove` + 删分支，不留残枝。
+
+### 起手
+
+```bash
+git fetch origin
+git worktree add -b feat/xxx .worktrees/feat-xxx origin/main
+cd .worktrees/feat-xxx
+ln -s ../../node_modules node_modules   # 复用主工作树依赖（package.json/lock 未变时）
+npm run check && npm test && npm run build
+```
+
+> 依赖有变动（改了 `package.json`/`package-lock.json`）时改用 `npm ci`，**不要**复用符号链接。
+
+### 收尾（合并回 main）
+
+```bash
+# 1) 在 worktree 里提交并自测全绿
+git add -A && git commit -m "feat: …"
+npm run check && npm test && npm run build
+
+# 2) 回主工作树合并（main 不落后时可直接快进；有分叉用 --no-ff 保留分支信息）
+cd /home/nark/workspace/beijing_fushengji_html
+git fetch origin && git merge --no-ff feat/xxx
+git push origin main        # 触发 Cloudflare Pages 部署
+
+# 3) 清理
+git worktree remove .worktrees/feat-xxx
+git branch -d feat/xxx
+```
+
+### 红线
+
+- **不** `git push --force` main；**不**改写已推送的历史（本仓库只在首次推送前重写过一次，此后历史不可变）。
+- 合并前 `npm run check`、`npm test`、`npm run build` 必须全绿；`dist/` 只应含白名单资源（背景图 + 16 个音效 + 内联单文件）。
+- `dist/`、`reference/`、`node_modules/`、`_assets_all/`、`.worktrees/` 一律**不得提交**。
+- 规则/数值改动必须带 oracle 断言（`tests/oracle.test.ts`，固定种子对照原版公式）。
+
 ## 里程碑（PLAN.md §6）
 
 M1 可玩核心（`core` + 主机制 + 最高分/设置，oracle 达标）→ M2 移动皮肤 + 复古质感 → M3 延后项（上海模式/纯文案框/帮助页）。
 
 ## 交付与合规
 
-- 交付 = 单文件 `index.html`（可双击 / 挂静态托管）。部署后定（暂 Cloudflare；国内免备案目标 CloudBase / EdgeOne Pages）。
-- **GPL v2**：衍生版须 GPL v2 开源，保留版权与致谢原作者郭祥昊。
+- 交付 = 单文件 `index.html`（可双击 / 挂静态托管）。部署：**Cloudflare Pages 已连接本仓库**，push `main` 自动构建部署。
+- CF Pages 构建设置：构建命令 `npm run build`，输出目录 `dist`，环境变量 **`NODE_VERSION=22`**（Vite 8 要求 Node ≥ 20.19 / ≥ 22.12；本地开发用 Node 26）。
+- 国内免备案备选目标：CloudBase 静态托管 / EdgeOne Pages。
+- **GPL v2**：衍生版须 GPL v2 开源，保留版权与致谢原作者郭祥昊；应用内「设置 → 关于本游戏」已含版权/无担保/源码链接（GPL v2 §2(c)）。
