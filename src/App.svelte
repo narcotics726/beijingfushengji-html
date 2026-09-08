@@ -267,6 +267,17 @@
       <h2>设置</h2>
       <label><input type="checkbox" checked={$settings.sound} onchange={(e) => updateSettings({ sound: e.currentTarget.checked })} /> 声音</label>
       <label><input type="checkbox" checked={$settings.hack} onchange={(e) => updateSettings({ hack: e.currentTarget.checked })} /> 黑客事件</label>
+      <!-- GPL v2 合规：版权 / 无担保 / 许可证与源码获取方式 -->
+      <details class="about">
+        <summary>关于本游戏</summary>
+        <p>北京浮生记 · 网页版（v1.2.2 复刻）</p>
+        <p>原版 © 1999–2001 郭祥昊 / Guoly Computing，以 GPL v2 开源。</p>
+        <p>本网页版为其衍生作品，同样以 GPL v2 发布，不提供任何担保。</p>
+        <p>
+          源码：<a href="https://github.com/narcotics726/beijingfushengji-html" target="_blank" rel="noopener">本复刻版</a>
+          　·　<a href="https://github.com/chrisguo/beijing_fushengji" target="_blank" rel="noopener">原版仓库</a>
+        </p>
+      </details>
       <div class="actions"><button onclick={() => (showSettings = false)}>关闭</button></div>
     </div>
   </div>
@@ -360,6 +371,9 @@
   .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); display: grid; place-items: center; z-index: 20; padding: 12px; overflow: auto; }
   .box { background: var(--fsj-panel); border: 3px solid var(--fsj-border); border-radius: 8px; padding: 14px; max-width: 96vw; max-height: 86vh; overflow: auto; }
   .actions { display: flex; gap: 8px; margin-top: 10px; justify-content: flex-end; flex-wrap: wrap; }
+  .about { margin-top: 10px; text-align: left; font-size: 0.82em; line-height: 1.5; }
+  .about summary { cursor: pointer; }
+  .about p { margin: 4px 0; }
   .slider-row { display: flex; align-items: center; gap: 10px; }
   .slider-row input[type="range"] { flex: 1; }
   .dlg-label { white-space: pre-wrap; line-height: 1.4; }
