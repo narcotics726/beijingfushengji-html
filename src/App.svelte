@@ -165,7 +165,7 @@
         <div class="row">
           <div class="fillbar">
             <div class="fill" style="width:{pct(maxSellQty(g, good.id), qv(sellQty, good.id))}%"></div>
-            <span class="label"><span class="nm">{good.name}</span><span class="inf">进{g.holdCost[good.id]}元 ×{qv(sellQty, good.id)}/{maxSellQty(g, good.id)}</span></span>
+            <span class="label"><span class="nm">{good.name}</span><span class="inf">进{g.holdCost[good.id]}元 ×{qv(sellQty, good.id)}/{g.holdings[good.id]}</span></span>
             <input class="range" type="range" min="0" max={maxSellQty(g, good.id)} step="1" bind:value={sellQty[good.id]} />
           </div>
           <button class="act" disabled={maxSellQty(g, good.id) <= 0} onclick={() => sellAction(good.id, qv(sellQty, good.id))}>卖</button>
@@ -338,12 +338,12 @@
   .pane { margin-bottom: 4px; background: var(--fsj-panel); border: 2px solid var(--fsj-border); border-radius: 6px; padding: 4px 6px; }
   .pane h2 { margin: 0 0 3px; font-size: 0.84em; color: var(--fsj-accent); border-bottom: 1px solid var(--fsj-border); padding-bottom: 2px; }
   .pane h2 { margin: 0 0 3px; font-size: 0.84em; color: var(--fsj-accent); border-bottom: 1px solid var(--fsj-border); padding-bottom: 2px; }
-  .row { display: flex; align-items: center; gap: 5px; border-bottom: 1px dashed var(--fsj-border); padding: 2px 0; }
-  .fillbar { position: relative; flex: 1; height: 32px; background: var(--fsj-panel2); border: 1px solid var(--fsj-border); border-radius: 4px; overflow: hidden; }
+  .row { display: flex; align-items: center; gap: 5px; border-bottom: 1px dashed var(--fsj-border); padding: 3px 0; }
+  .fillbar { position: relative; flex: 1; height: 38px; background: var(--fsj-panel2); border: 1px solid var(--fsj-border); border-radius: 4px; overflow: hidden; }
   .fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--fsj-accent); opacity: 0.4; }
-  .label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 8px; pointer-events: none; font-size: 0.9em; }
-  .label .nm { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%; }
-  .label .inf { font-family: "Courier New", monospace; }
+  .label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 8px; pointer-events: none; font-size: 1em; }
+  .label .nm { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 55%; }
+  .label .inf { font-family: "Courier New", monospace; font-size: 1.1em; font-weight: 700; }
   .range { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
   .act { min-width: 42px; }
   .empty { color: var(--fsj-dim); padding: 4px 0; }
