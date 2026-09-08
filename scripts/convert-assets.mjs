@@ -33,6 +33,13 @@ const IMG_EXT = new Set(['.bmp', '.jpg', '.jpeg', '.ico', '.gif', '.png'])
 const AUDIO_EXT = new Set(['.wav'])
 const TEXT_FILES = ['Tips.txt', 'News.txt', 'Ticker.txt'] // GBK → UTF-8
 
+// reference/ 为上游 GPL 源码，未纳入本仓库（.gitignore）。
+// 转换后的素材已随仓库提交，因此缺失 reference/ 时跳过而非报错。
+if (!existsSync(REF)) {
+  console.log('未找到 reference/（上游 C++ 源码，未纳入本仓库）；转档产物已在 public/assets 与 src/core/data/text，无需重跑。')
+  process.exit(0)
+}
+
 mkdirSync(OUT_IMG, { recursive: true })
 mkdirSync(OUT_AUDIO, { recursive: true })
 mkdirSync(OUT_TEXT, { recursive: true })
