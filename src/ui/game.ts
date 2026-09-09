@@ -2,8 +2,9 @@
 // 用 writable 简化；每次操作后把 game 设为深拷贝快照以触发组件渲染。
 import { writable } from 'svelte/store'
 import type { GameState } from '../core/state'
-import { createRng, type SeedableRandom } from '../core/rng'
+import { createRng, randInt, type SeedableRandom } from '../core/rng'
 import { newGame, moveTo, getScore, type GameEvent } from '../core/engine'
+import { LOCATIONS } from '../core/data/locations'
 import * as A from '../core/actions'
 import {
   getTop10,
@@ -113,6 +114,14 @@ export function moveToLoc(loc: number) {
   pushEvents(evs)
   if (state.over) finish()
   refresh()
+}
+
+// 「去别处」：直接过天。原版需弹地图选点（SelectionDlg 的 OnLoc*，选中不同地点才推进），
+// 此处为移动端体验简化为「随机去一个别的地点」——仍保证换地点，故 moveTo 的 1:1 语义不变。
+export function moveElsewhere() {
+  if (state.over) return
+  const others = LOCATIONS.filter((l) => l.id !== state.loc)
+  moveToLoc(others[randInt(others.length, rng)].id)
 }
 
 let finished = false

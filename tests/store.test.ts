@@ -5,6 +5,7 @@ import { get } from 'svelte/store'
 import {
   startNewGame,
   moveToLoc,
+  moveElsewhere,
   buyAction,
   sellAction,
   bankDepositAction,
@@ -50,5 +51,24 @@ describe('UI store（core 接线）', () => {
     expect(er).not.toBeNull()
     expect(er!.top10.length).toBe(10)
     expect(Array.isArray(get(events))).toBe(true)
+  })
+
+  // 「去别处」= 随机换一个别的地点并过天（不再弹地图选点）
+  it('moveElsewhere：每次换到不同地点且推进 1 天', () => {
+    updateSettings({ sound: false })
+    startNewGame()
+    for (let i = 0; i < 20; i++) {
+      const before = get(game)
+      if (before.over) break
+      moveElsewhere()
+      const after = get(game)
+      expect(after.loc).not.toBe(before.loc) // 必定换地点（否则 moveTo 不推进）
+      expect(after.loc).toBeGreaterThanOrEqual(1)
+      expect(after.loc).toBeLessThanOrEqual(10)
+      if (after.over) break // 死亡分支提前 return，不扣天（源码语义）
+      // 必定过天（强制住院可额外扣 1..2 天，故只断言「推进了」）
+      expect(after.timeLeft).toBeLessThan(before.timeLeft)
+      expect(before.timeLeft - after.timeLeft).toBeLessThanOrEqual(3)
+    }
   })
 })

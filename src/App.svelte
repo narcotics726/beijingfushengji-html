@@ -4,7 +4,7 @@
     events,
     endResult,
     settings,
-    moveToLoc,
+    moveElsewhere,
     buyAction,
     sellAction,
     bankDepositAction,
@@ -42,10 +42,12 @@
   let sellQty = $state<Record<number, number>>({})
   let amountDlg = $state<null | { mode: 'deposit' | 'withdraw' | 'heal' | 'repay'; label: string; max: number }>(null)
   let amountValue = $state(0)
+  // 金额可直接输入（数字较大时滑杆难以精确控制）；点击数字进入编辑态。
+  let amountEditing = $state(false)
+  let amountDraft = $state('')
   let showSettings = $state(false)
   let showBank = $state(false)
   let showBoss = $state(false)
-  let showLocation = $state(false)
   let showRank = $state(false)
 
   // 原版买卖数量默认=最大；金钱/价格/持仓一变化即重算为当前可买/可卖上限（可为 0）
@@ -61,9 +63,45 @@
   function pct(max: number, val: number) {
     return max <= 0 ? 0 : Math.min(100, Math.max(0, Math.round((val / max) * 100)))
   }
-  function goTo(id: number) {
-    moveToLoc(id)
-    showLocation = false
+  // ---- 金额编辑（点击数字直接输入；滑杆与输入框双向同步，提交时统一夹到 0..max） ----
+  function startAmountEdit() {
+    amountDraft = String(amountValue)
+    amountEditing = true
+  }
+  // 从输入框自身取值（不依赖 bind 与 oninput 的注册顺序），过滤非数字（含粘贴 "1,000"）
+  function onAmountInput(e: Event) {
+    const el = e.currentTarget as HTMLInputElement
+    const digits = el.value.replace(/\D/g, '')
+    if (digits !== el.value) el.value = digits
+    amountDraft = digits
+    if (digits === '') return // 清空时先不动滑杆，提交再定
+    amountValue = clampAmount(parseInt(digits, 10))
+  }
+  // 编辑态下拖滑杆 → 同步回输入框（取事件值，与 bind 顺序无关）
+  function syncDraftFromSlider(e: Event) {
+    if (amountEditing) amountDraft = (e.currentTarget as HTMLInputElement).value
+  }
+  function commitAmountEdit() {
+    const n = parseInt(amountDraft, 10)
+    if (Number.isFinite(n)) amountValue = clampAmount(n)
+    amountEditing = false
+  }
+  function onAmountKey(e: KeyboardEvent) {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      commitAmountEdit()
+      ;(e.currentTarget as HTMLInputElement).blur()
+    } else if (e.key === 'Escape') {
+      amountEditing = false
+    }
+  }
+  function clampAmount(n: number) {
+    const max = amountDlg?.max ?? 0
+    return Math.min(max, Math.max(0, Math.floor(n)))
+  }
+  function focusSelect(node: HTMLInputElement) {
+    node.focus()
+    node.select()
   }
   function goBank() {
     if (g.soundEnabled) playSound('opendoor.wav')
@@ -92,12 +130,14 @@
   function openAmount(mode: 'deposit' | 'withdraw' | 'heal' | 'repay', label: string, max: number) {
     amountDlg = { mode, label, max }
     amountValue = max
+    amountEditing = false
   }
   function confirmAmount() {
     if (!amountDlg) return
     const v = Math.max(0, Math.min(amountDlg.max, Math.floor(amountValue)))
     const m = amountDlg.mode
     amountDlg = null
+    amountEditing = false
     if (m === 'deposit') bankDepositAction(v)
     else if (m === 'withdraw') bankWithdrawAction(v)
     else if (m === 'repay') repayAction(v)
@@ -132,10 +172,10 @@
 </section>
 </div>
 
-<!-- 位置条（薄）→ 弹选地点 -->
+<!-- 位置条（薄）→ 「去别处」直接过天（随机换地点） -->
 <div class="locrow">
   <span class="loc-now">📍 {locName}</span>
-  <button onclick={() => (showLocation = true)}>去别处…</button>
+  <button onclick={() => moveElsewhere()}>去别处</button>
 </div>
 
 <!-- 主区分屏：黑市上半(买) / 出租屋下半(卖)，两栏同屏、各自滚动 -->
@@ -198,29 +238,28 @@
   <div class="ticker-track"><span style="animation-duration:{tickerDur}s">{tickerText}</span></div>
 </footer>
 
-<!-- 弹选地点 -->
-{#if showLocation}
-  <div class="modal">
-    <div class="box">
-      <h2>北京地图</h2>
-      <div class="loc-grid">
-        {#each LOCATIONS as loc (loc.id)}
-          <button class:active={g.loc === loc.id} onclick={() => goTo(loc.id)}>{loc.name}</button>
-        {/each}
-      </div>
-      <div class="actions"><button onclick={() => (showLocation = false)}>关闭</button></div>
-    </div>
-  </div>
-{/if}
-
-<!-- 金额 / 治疗（滑杆） -->
+<!-- 金额 / 治疗（滑杆 + 点击数字直接输入） -->
 {#if amountDlg}
   <div class="modal">
     <div class="box">
       <p class="dlg-label">{amountDlg.label}</p>
       <div class="slider-row">
-        <input type="range" min="0" max={amountDlg.max} bind:value={amountValue} />
-        <b class="qty">{amountValue}</b>
+        <input type="range" min="0" max={amountDlg.max} bind:value={amountValue} oninput={syncDraftFromSlider} />
+        {#if amountEditing}
+          <input
+            class="qty-input"
+            type="text"
+            inputmode="numeric"
+            autocomplete="off"
+            value={amountDraft}
+            use:focusSelect
+            oninput={onAmountInput}
+            onblur={commitAmountEdit}
+            onkeydown={onAmountKey}
+          />
+        {:else}
+          <button class="qty" type="button" title="点击直接输入金额" onclick={startAmountEdit}>{amountValue}</button>
+        {/if}
       </div>
       <div class="actions">
         <button onclick={() => confirmAmount()}>确定</button>
@@ -234,12 +273,12 @@
 {#if showBank}
   <div class="modal">
     <div class="box">
+      <button class="box-x" type="button" aria-label="关闭" onclick={() => (showBank = false)}>✕</button>
       <h2>银行</h2>
       <p>客户您好! 您的现金是{g.cash}, 您的存款是{g.bank}. 请问您要...</p>
-      <div class="actions">
+      <div class="actions bank-actions">
         <button onclick={() => bankDep()}>存款</button>
         <button onclick={() => bankWit()}>取款</button>
-        <button onclick={() => (showBank = false)}>关闭</button>
       </div>
     </div>
   </div>
@@ -369,18 +408,21 @@
   .ticker-track span { display: inline-block; padding-left: 100%; animation: ticker linear infinite; }
   @keyframes ticker { to { transform: translateX(-100%); } }
   .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); display: grid; place-items: center; z-index: 20; padding: 12px; overflow: auto; }
-  .box { background: var(--fsj-panel); border: 3px solid var(--fsj-border); border-radius: 8px; padding: 14px; max-width: 96vw; max-height: 86vh; overflow: auto; }
+  .box { position: relative; background: var(--fsj-panel); border: 3px solid var(--fsj-border); border-radius: 8px; padding: 14px; max-width: 96vw; max-height: 86vh; overflow: auto; }
+  /* 弹窗右上角关闭图标（银行弹窗用，替代原「关闭」按钮） */
+  .box-x { position: absolute; top: 4px; right: 4px; width: 34px; height: 34px; min-width: 0; padding: 0; line-height: 1; font-size: 1.05em; border-radius: 4px; }
+  .bank-actions { justify-content: stretch; gap: 10px; }
+  .bank-actions button { flex: 1; min-height: 54px; font-size: 1.2em; font-weight: 700; }
   .actions { display: flex; gap: 8px; margin-top: 10px; justify-content: flex-end; flex-wrap: wrap; }
   .about { margin-top: 10px; text-align: left; font-size: 0.82em; line-height: 1.5; }
   .about summary { cursor: pointer; }
   .about p { margin: 4px 0; }
   .slider-row { display: flex; align-items: center; gap: 10px; }
   .slider-row input[type="range"] { flex: 1; }
+  .qty { height: 36px; min-width: 92px; padding: 6px 8px; font-size: 1.15em; font-weight: 700; font-family: "Courier New", monospace; text-align: right; text-decoration: underline dotted; text-underline-offset: 3px; }
+  .qty-input { height: 36px; width: 92px; padding: 6px 8px; font-size: 1.15em; font-weight: 700; font-family: "Courier New", monospace; text-align: right; border: 1px solid var(--fsj-border); border-radius: 4px; background: #fff; color: var(--fsj-text); }
   .dlg-label { white-space: pre-wrap; line-height: 1.4; }
   .event-text { white-space: pre-wrap; line-height: 1.5; }
-  .loc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 8px 0; }
-  .loc-grid button { padding: 12px; font-size: 1em; }
-  .loc-grid button.active { background: var(--fsj-accent); color: #fff; }
   .rank { margin: 6px 0; padding-left: 1.2em; }
   .boss-veil { position: fixed; inset: 0; z-index: 30; background: #0a3050; display: grid; place-items: center; cursor: pointer; }
   .boss-screen { text-align: center; color: #f0f0b0; }

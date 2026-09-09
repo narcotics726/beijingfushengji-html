@@ -1,11 +1,25 @@
 // @vitest-environment jsdom
-// App 客户端挂载冒烟：在 jsdom 里真实 mount，验证主界面渲染 + 打开地点弹窗 + 点地点推进回合。
-// 这能捕获 SSR 测不到的服务端/客户端运行期错误。
+// App 客户端挂载冒烟：在 jsdom 里真实 mount，验证主界面渲染、
+// 「去别处」直接过天（随机换地点，不再弹地图）、银行弹窗（大按钮 + 右上角 ✕）、
+// 金额弹窗点击数字直接编辑。这能捕获 SSR 测不到的服务端/客户端运行期错误。
 import { describe, it, expect, beforeEach } from 'vitest'
 import { mount, tick } from 'svelte'
 import App from '../src/App.svelte'
 
 const LOC_NAMES = ['建国门', '北京站', '西直门', '崇文门', '东直门', '复兴门', '积水潭', '长椿街', '公主坟', '苹果园']
+
+function dayOf(html: string): number {
+  return Number(/北京浮生\((\d+)\/40天\)/.exec(html)?.[1] ?? -1)
+}
+function locOf(html: string): string | undefined {
+  return LOC_NAMES.find((n) => html.includes(`📍 ${n}`))
+}
+function button(root: HTMLElement, text: string): HTMLButtonElement {
+  return Array.from(root.querySelectorAll('button')).find((b) => b.textContent?.trim() === text) as HTMLButtonElement
+}
+function boxWith(root: HTMLElement, text: string): HTMLElement {
+  return Array.from(root.querySelectorAll('.box')).find((b) => b.textContent?.includes(text)) as HTMLElement
+}
 
 describe('App 客户端挂载（jsdom）', () => {
   beforeEach(() => {
@@ -16,7 +30,7 @@ describe('App 客户端挂载（jsdom）', () => {
     }
   })
 
-  it('挂载后主界面渲染 + 打开地点弹窗 + 点地点推进回合', async () => {
+  it('挂载后主界面渲染 + 「去别处」直接过天并换到随机地点（无地图弹窗）', async () => {
     const target = document.createElement('div')
     document.body.appendChild(target)
     mount(App as never, { target })
@@ -24,24 +38,83 @@ describe('App 客户端挂载（jsdom）', () => {
     expect(target.innerHTML).toContain('北京浮生')
     expect(target.querySelectorAll('input[type="range"]').length).toBeGreaterThan(0)
 
-    const locBtn = Array.from(target.querySelectorAll('button')).find((b) => b.textContent === '去别处…')
+    const day0 = dayOf(target.innerHTML)
+    expect(locOf(target.innerHTML)).toBeUndefined() // 开局不在任何地点（loc = -1）
+
+    const locBtn = button(target, '去别处')
     expect(locBtn).toBeTruthy()
-    ;(locBtn as HTMLButtonElement).click()
+    locBtn.click()
     await tick()
 
-    // 地点弹窗里应有 10 个地点按钮
-    const locButtons = Array.from(target.querySelectorAll('button')).filter((b) =>
-      LOC_NAMES.includes(b.textContent ?? ''),
-    )
-    expect(locButtons.length).toBe(10)
+    // 不再有地图弹窗；直接过天：天数推进，位置变为某个具体地点
+    expect(target.innerHTML).not.toContain('北京地图')
+    const day1 = dayOf(target.innerHTML)
+    expect(day1).toBeGreaterThan(day0) // 强制住院可能额外扣天，故不写死 +1
+    const loc1 = locOf(target.innerHTML)
+    expect(loc1).toBeTruthy()
 
-    // 点「建国门」→ 移动过天 → 位置条显示当前位置
-    const jgm = locButtons.find((b) => b.textContent === '建国门') as HTMLButtonElement
-    jgm.click()
+    // 再点一次必须换到别的地点（保持 moveTo「同地点不推进」语义）
+    button(target, '去别处').click()
     await tick()
-    expect(target.innerHTML).toContain('📍 建国门')
+    expect(dayOf(target.innerHTML)).toBeGreaterThan(day1)
+    expect(locOf(target.innerHTML)).not.toBe(loc1)
 
     // 等动态音效 import 落地（jsdom 无 Audio，被 sound.ts 的 try/catch 吞掉，不应抛错）
+    await new Promise((r) => setTimeout(r, 20))
+  })
+
+  it('银行弹窗：存/取按钮放大、无「关闭」按钮、右上角 ✕ 关闭；金额可点击直接输入', async () => {
+    const target = document.createElement('div')
+    document.body.appendChild(target)
+    mount(App as never, { target })
+
+    button(target, '银行').click()
+    await tick()
+
+    const bank = boxWith(target, '客户您好')
+    expect(bank).toBeTruthy()
+    expect(button(bank, '存款')).toBeTruthy()
+    expect(button(bank, '取款')).toBeTruthy()
+    expect(button(bank, '关闭')).toBeUndefined()
+    const x = bank.querySelector('.box-x') as HTMLButtonElement
+    expect(x).toBeTruthy()
+
+    // 点「存款」→ 金额弹窗，数字为可点击按钮，滑杆上限 = 现金
+    button(bank, '存款').click()
+    await tick()
+    const dlg = boxWith(target, '您存多少钱?')
+    expect(dlg).toBeTruthy()
+    const range = dlg.querySelector('input[type="range"]') as HTMLInputElement
+    const qty = dlg.querySelector('.qty') as HTMLButtonElement
+    expect(qty).toBeTruthy()
+    const max = Number(range.max)
+    expect(max).toBeGreaterThan(0)
+    expect(Number(qty.textContent)).toBe(max) // 默认 = 最大（原行为）
+
+    // 点数字 → 变输入框并聚焦；输入与滑杆双向同步
+    qty.click()
+    await tick()
+    const inp = dlg.querySelector('.qty-input') as HTMLInputElement
+    expect(inp).toBeTruthy()
+    expect(document.activeElement).toBe(inp)
+    inp.value = '123'
+    inp.dispatchEvent(new Event('input', { bubbles: true }))
+    await tick()
+    expect(Number(range.value)).toBe(123)
+
+    // 超出上限 → 提交时夹到 max
+    inp.value = '99999999'
+    inp.dispatchEvent(new Event('input', { bubbles: true }))
+    inp.dispatchEvent(new Event('blur'))
+    await tick()
+    expect(Number(range.value)).toBe(max)
+    expect(Number((dlg.querySelector('.qty') as HTMLButtonElement).textContent)).toBe(max)
+
+    // ✕ 关闭银行弹窗
+    x.click()
+    await tick()
+    expect(boxWith(target, '客户您好')).toBeUndefined()
+
     await new Promise((r) => setTimeout(r, 20))
   })
 })
