@@ -14,10 +14,8 @@
     repayAction,
     rentAction,
     wangbaAction,
-    airportAction,
     startNewGame,
     advanceEvent,
-    exitGame,
     setEndName,
     updateSettings,
   } from './ui/game'
@@ -47,7 +45,6 @@
   let amountDraft = $state('')
   let showSettings = $state(false)
   let showBank = $state(false)
-  let showBoss = $state(false)
   let showRank = $state(false)
 
   // 原版买卖数量默认=最大；金钱/价格/持仓一变化即重算为当前可买/可卖上限（可为 0）
@@ -225,10 +222,7 @@
     <button onclick={() => goPost()}>邮局</button>
     <button onclick={() => rentAction()}>租房</button>
     <button onclick={() => wangbaAction()}>网吧</button>
-    <button onclick={() => airportAction()}>机场</button>
     <button onclick={() => (showRank = true)}>排行榜</button>
-    <button class="boss" onclick={() => (showBoss = true)}>老板</button>
-    <button class="danger" onclick={() => exitGame()}>离开</button>
   </div>
 </section>
 
@@ -245,21 +239,23 @@
       <p class="dlg-label">{amountDlg.label}</p>
       <div class="slider-row">
         <input type="range" min="0" max={amountDlg.max} bind:value={amountValue} oninput={syncDraftFromSlider} />
-        {#if amountEditing}
-          <input
-            class="qty-input"
-            type="text"
-            inputmode="numeric"
-            autocomplete="off"
-            value={amountDraft}
-            use:focusSelect
-            oninput={onAmountInput}
-            onblur={commitAmountEdit}
-            onkeydown={onAmountKey}
-          />
-        {:else}
-          <button class="qty" type="button" title="点击直接输入金额" onclick={startAmountEdit}>{amountValue}</button>
-        {/if}
+        <div class="num-row">
+          {#if amountEditing}
+            <input
+              class="qty-input"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              value={amountDraft}
+              use:focusSelect
+              oninput={onAmountInput}
+              onblur={commitAmountEdit}
+              onkeydown={onAmountKey}
+            />
+          {:else}
+            <button class="qty" type="button" title="点击直接输入金额" onclick={startAmountEdit}>{amountValue}</button>
+          {/if}
+        </div>
       </div>
       <div class="actions">
         <button onclick={() => confirmAmount()}>确定</button>
@@ -320,16 +316,6 @@
       <div class="actions"><button onclick={() => (showSettings = false)}>关闭</button></div>
     </div>
   </div>
-{/if}
-
-<!-- Boss 保护窗 -->
-{#if showBoss}
-  <button class="boss-veil" type="button" onclick={() => (showBoss = false)}>
-    <span class="boss-screen">
-      <h1>老板来了！</h1>
-      <p>（假装工作/汇报，点击任意处离开）</p>
-    </span>
-  </button>
 {/if}
 
 <!-- 事件弹窗（队列逐个） -->
@@ -400,8 +386,6 @@
   .locrow { display: flex; align-items: center; justify-content: space-between; padding: 1px 6px; font-weight: 700; }
   .subsys-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); gap: 4px; }
   .subsys-grid button { min-height: 34px; font-size: 0.9em; padding: 2px 4px; }
-  .boss { background: #d4b0b0; }
-  .danger { background: #e0b0b0; color: #600; }
   .ticker { position: sticky; bottom: 0; z-index: 9; display: flex; align-items: center; background: #1a1a20; color: var(--fsj-ticker, #ffd400); font-size: 0.85em; overflow: hidden; }
   .ticker-title { background: var(--fsj-accent); color: #fff; padding: 2px 6px; font-size: 0.8em; }
   .ticker-track { white-space: nowrap; overflow: hidden; flex: 1; }
@@ -417,17 +401,17 @@
   .about { margin-top: 10px; text-align: left; font-size: 0.82em; line-height: 1.5; }
   .about summary { cursor: pointer; }
   .about p { margin: 4px 0; }
-  .slider-row { display: flex; align-items: center; gap: 10px; }
-  .slider-row input[type="range"] { flex: 1; }
+  /* 金额输入：滑杆与数字分置两行（数字单独一行、占满整行，点按/编辑更好操作） */
+  .slider-row { display: flex; flex-direction: column; gap: 8px; }
+  .slider-row input[type="range"] { width: 100%; }
+  .num-row { display: flex; }
+  .num-row .qty,
+  .num-row .qty-input { flex: 1; }
   .qty { height: 36px; min-width: 92px; padding: 6px 8px; font-size: 1.15em; font-weight: 700; font-family: "Courier New", monospace; text-align: right; text-decoration: underline dotted; text-underline-offset: 3px; }
   .qty-input { height: 36px; width: 92px; padding: 6px 8px; font-size: 1.15em; font-weight: 700; font-family: "Courier New", monospace; text-align: right; border: 1px solid var(--fsj-border); border-radius: 4px; background: #fff; color: var(--fsj-text); }
   .dlg-label { white-space: pre-wrap; line-height: 1.4; }
   .event-text { white-space: pre-wrap; line-height: 1.5; }
   .rank { margin: 6px 0; padding-left: 1.2em; }
-  .boss-veil { position: fixed; inset: 0; z-index: 30; background: #0a3050; display: grid; place-items: center; cursor: pointer; }
-  .boss-screen { text-align: center; color: #f0f0b0; }
-  .boss-screen h1 { font-size: 2.4em; margin: 0 0 8px; letter-spacing: 0.2em; }
-  .boss-screen p { color: #cbd7e6; }
   @media (min-width: 760px) {
     .core { max-width: 760px; margin: 0 auto; width: 100%; }
   }
