@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 // App 客户端挂载冒烟：在 jsdom 里真实 mount，验证主界面渲染、
 // 「去别处」直接过天（随机换地点，不再弹地图）、银行弹窗（大按钮 + 右上角 ✕）、
-// 金额弹窗点击数字直接编辑。这能捕获 SSR 测不到的服务端/客户端运行期错误。
+// 金额弹窗点击数字直接编辑（滑杆与数字分置两行）、子系统区按钮清单。
+// 这能捕获 SSR 测不到的服务端/客户端运行期错误。
 import { describe, it, expect, beforeEach } from 'vitest'
 import { mount, tick } from 'svelte'
 import App from '../src/App.svelte'
@@ -87,6 +88,13 @@ describe('App 客户端挂载（jsdom）', () => {
     const range = dlg.querySelector('input[type="range"]') as HTMLInputElement
     const qty = dlg.querySelector('.qty') as HTMLButtonElement
     expect(qty).toBeTruthy()
+    // 滑杆与数字输入分置两行：滑杆是第一行，数字在独占的第二行（.num-row）
+    const sliderRow = dlg.querySelector('.slider-row') as HTMLElement
+    expect(sliderRow.querySelector(':scope > input[type="range"]')).toBe(range)
+    const numRow = sliderRow.querySelector(':scope > .num-row') as HTMLElement
+    expect(numRow).toBeTruthy()
+    expect(numRow.contains(range)).toBe(false)
+    expect(numRow.contains(qty)).toBe(true)
     const max = Number(range.max)
     expect(max).toBeGreaterThan(0)
     expect(Number(qty.textContent)).toBe(max) // 默认 = 最大（原行为）
@@ -116,5 +124,27 @@ describe('App 客户端挂载（jsdom）', () => {
     expect(boxWith(target, '客户您好')).toBeUndefined()
 
     await new Promise((r) => setTimeout(r, 20))
+  })
+
+  it('子系统区已移除「机场 / 老板 / 离开」按钮', async () => {
+    const target = document.createElement('div')
+    document.body.appendChild(target)
+    mount(App as never, { target })
+    await tick()
+
+    const grid = target.querySelector('.subsys-grid') as HTMLElement
+    expect(grid).toBeTruthy()
+    expect(Array.from(grid.querySelectorAll('button')).map((b) => b.textContent?.trim())).toEqual([
+      '银行',
+      '医院',
+      '邮局',
+      '租房',
+      '网吧',
+      '排行榜',
+    ])
+    expect(button(target, '机场')).toBeUndefined()
+    expect(button(target, '老板')).toBeUndefined()
+    expect(button(target, '离开')).toBeUndefined()
+    expect(target.querySelector('.boss-veil')).toBeNull()
   })
 })
